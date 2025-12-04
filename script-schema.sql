@@ -324,7 +324,10 @@ CREATE TABLE `sheets_files` (
   `updated_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขล่าสุด',
   `updated_by` VARCHAR(255) NULL COMMENT 'เก็บ id ผู้แก้ไขข้อมูลล่าสุด',
   `status_modified_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขสถานะล่าสุด',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_sheets_files_sheet_id` (`sheet_id`),
+  CONSTRAINT `fk_sheets_files_sheet_id`
+    FOREIGN KEY (`sheet_id`) REFERENCES `sheets` (`id`)
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูลไฟล์เอกสารสรุปเนื้อหา';
 
