@@ -1,61 +1,64 @@
--- DROP FUNCTION IF EXISTS `UUIDV7`
+-- SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS `users_plans`;
+DROP TABLE IF EXISTS `plans`;
+DROP TABLE IF EXISTS `users_payments`;
+DROP TABLE IF EXISTS `users_reports`;
+DROP TABLE IF EXISTS `posts_shares`;
+DROP TABLE IF EXISTS `posts_comments`;
+DROP TABLE IF EXISTS `posts_likes`;
+DROP TABLE IF EXISTS `posts`;
+DROP TABLE IF EXISTS `users_sheets_favorites`;
+DROP TABLE IF EXISTS `users_sheets_answers`;
+DROP TABLE IF EXISTS `sheets_answers`;
+DROP TABLE IF EXISTS `sheets_questions`;
+DROP TABLE IF EXISTS `sheets_files`;
+DROP TABLE IF EXISTS `sheets_keywords`;
+DROP TABLE IF EXISTS `sheets_categories`;
+DROP TABLE IF EXISTS `sheets`;
+DROP TABLE IF EXISTS `keywords`;
+DROP TABLE IF EXISTS `categories`;
+DROP TABLE IF EXISTS `tokens`;
+DROP TABLE IF EXISTS `sessions`;
+DROP TABLE IF EXISTS `user_providers`;
+DROP TABLE IF EXISTS `users`;
+DROP TABLE IF EXISTS `scopes`;
+DROP TABLE IF EXISTS `permissions`;
+DROP TABLE IF EXISTS `roles`;
+DROP FUNCTION IF EXISTS `UUIDV7`;
 
--- DROP TABLE IF EXISTS `users_plans`;
--- DROP TABLE IF EXISTS `plans`;
--- DROP TABLE IF EXISTS `users_payments`;
--- DROP TABLE IF EXISTS `users_reports`;
--- DROP TABLE IF EXISTS `posts_shares`;
--- DROP TABLE IF EXISTS `posts_comments`;
--- DROP TABLE IF EXISTS `posts_likes`;
--- DROP TABLE IF EXISTS `posts`;
--- DROP TABLE IF EXISTS `users_sheets_favorites`;
--- DROP TABLE IF EXISTS `users_sheets_answers`;
--- DROP TABLE IF EXISTS `sheets_answers`;
--- DROP TABLE IF EXISTS `sheets_questions`;
--- DROP TABLE IF EXISTS `sheets_files`;
--- DROP TABLE IF EXISTS `sheets_keywords`;
--- DROP TABLE IF EXISTS `sheets_categories`;
--- DROP TABLE IF EXISTS `sheets`;
--- DROP TABLE IF EXISTS `keywords`;
--- DROP TABLE IF EXISTS `categories`;
--- DROP TABLE IF EXISTS `tokens`;
--- DROP TABLE IF EXISTS `sessions`;
--- DROP TABLE IF EXISTS `user_providers`;
--- DROP TABLE IF EXISTS `users`;
--- DROP TABLE IF EXISTS `scopes`;
--- DROP TABLE IF EXISTS `permissions`;
--- DROP TABLE IF EXISTS `roles`;
+DROP TRIGGER IF EXISTS `before_insert_roles`;
+DROP TRIGGER IF EXISTS `before_insert_permissions`;
+DROP TRIGGER IF EXISTS `before_insert_scopes`;
+DROP TRIGGER IF EXISTS `before_insert_users`;
+DROP TRIGGER IF EXISTS `before_insert_user_providers`;
+DROP TRIGGER IF EXISTS `before_insert_sessions`;
+DROP TRIGGER IF EXISTS `before_insert_tokens`;
+DROP TRIGGER IF EXISTS `before_insert_categories`;
+DROP TRIGGER IF EXISTS `before_insert_keywords`;
+DROP TRIGGER IF EXISTS `before_insert_sheets`;
+DROP TRIGGER IF EXISTS `before_insert_sheets_categories`;
+DROP TRIGGER IF EXISTS `before_insert_sheets_keywords`;
+DROP TRIGGER IF EXISTS `before_insert_sheets_files`;
+DROP TRIGGER IF EXISTS `before_insert_sheets_questions`;
+DROP TRIGGER IF EXISTS `before_insert_sheets_answers`;
+DROP TRIGGER IF EXISTS `before_insert_users_sheets_answers`;
+DROP TRIGGER IF EXISTS `before_insert_users_sheets_favorites`;
+DROP TRIGGER IF EXISTS `before_insert_posts`;
+DROP TRIGGER IF EXISTS `before_insert_post_likes`;
+DROP TRIGGER IF EXISTS `before_insert_post_comments`;
+DROP TRIGGER IF EXISTS `before_insert_posts_shares`;
+DROP TRIGGER IF EXISTS `before_insert_users_reports`;
+DROP TRIGGER IF EXISTS `before_insert_user_payments`;
+DROP TRIGGER IF EXISTS `before_insert_plans`;
+DROP TRIGGER IF EXISTS `before_insert_users_plans`;
 
--- DROP TRIGGER IF EXISTS `before_insert_roles`;
--- DROP TRIGGER IF EXISTS `before_insert_permissions`;
--- DROP TRIGGER IF EXISTS `before_insert_scopes`;
--- DROP TRIGGER IF EXISTS `before_insert_users`;
--- DROP TRIGGER IF EXISTS `before_insert_user_providers`;
--- DROP TRIGGER IF EXISTS `before_insert_sessions`;
--- DROP TRIGGER IF EXISTS `before_insert_tokens`;
--- DROP TRIGGER IF EXISTS `before_insert_categories`;
--- DROP TRIGGER IF EXISTS `before_insert_keywords`;
--- DROP TRIGGER IF EXISTS `before_insert_sheets`;
--- DROP TRIGGER IF EXISTS `before_insert_sheets_categories`;
--- DROP TRIGGER IF EXISTS `before_insert_sheets_keywords`;
--- DROP TRIGGER IF EXISTS `before_insert_sheets_files`;
--- DROP TRIGGER IF EXISTS `before_insert_sheets_questions`;
--- DROP TRIGGER IF EXISTS `before_insert_sheets_answers`;
--- DROP TRIGGER IF EXISTS `before_insert_users_sheets_answers`;
--- DROP TRIGGER IF EXISTS `before_insert_users_sheets_favorites`;
--- DROP TRIGGER IF EXISTS `before_insert_posts`;
--- DROP TRIGGER IF EXISTS `before_insert_post_likes`;
--- DROP TRIGGER IF EXISTS `before_insert_post_comments`;
--- DROP TRIGGER IF EXISTS `before_insert_posts_shares`;
--- DROP TRIGGER IF EXISTS `before_insert_users_reports`;
--- DROP TRIGGER IF EXISTS `before_insert_user_payments`;
--- DROP TRIGGER IF EXISTS `before_insert_plans`;
--- DROP TRIGGER IF EXISTS `before_insert_users_plans`;
-
+-- SET FOREIGN_KEY_CHECKS = 1;
 
 -- =========================================
 -- Function: UUIDV7 (RFC 9562 compliant)
 -- =========================================
+@delimiter $$
+
 CREATE FUNCTION UUIDV7()
 RETURNS CHAR(36)
 DETERMINISTIC
@@ -85,11 +88,11 @@ BEGIN
         variant_hex, '-',
         node_hex
     ));
-END
+END$$
 
+@delimiter ;
 
 -- ====================
--- Tables
 -- Authentication
 -- ====================
 CREATE TABLE `roles` (
@@ -184,7 +187,7 @@ CREATE TABLE `user_providers` (
 CREATE TABLE `sessions` (
   `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id refresh token',
   `user_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ที่อ้างถึงในตาราง users',
-  `refresh_token` BINARY(32) NOT NULL COMMENT 'เก็บ refresh token',
+  `refresh_token` VARCHAR(512) NOT NULL COMMENT 'เก็บ refresh token',
   `issued_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บเวลาที่ออก refresh token',
   `expires_at` TIMESTAMP(3) NOT NULL COMMENT 'เก็บเวลาหมดอายุของ refresh token',
   `revoked_flag` BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'สถานะเพิกถอน refresh token',
@@ -200,7 +203,7 @@ CREATE TABLE `sessions` (
 CREATE TABLE `tokens` (
   `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id access token',
   `session_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id session ที่อ้างถึงในตาราง sessions',
-  `access_token` BINARY(32) NOT NULL COMMENT 'เก็บ access token',
+  `access_token` VARCHAR(512) NOT NULL COMMENT 'เก็บ access token',
   `issued_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บเวลาที่ออก access token',
   `expires_at` TIMESTAMP(3) NOT NULL COMMENT 'เก็บเวลาหมดอายุของ access token',
   `revoked_flag` BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'สถานะเพิกถอน access token',
@@ -324,10 +327,7 @@ CREATE TABLE `sheets_files` (
   `updated_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขล่าสุด',
   `updated_by` VARCHAR(255) NULL COMMENT 'เก็บ id ผู้แก้ไขข้อมูลล่าสุด',
   `status_modified_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขสถานะล่าสุด',
-  PRIMARY KEY (`id`),
-  KEY `idx_sheets_files_sheet_id` (`sheet_id`),
-  CONSTRAINT `fk_sheets_files_sheet_id`
-    FOREIGN KEY (`sheet_id`) REFERENCES `sheets` (`id`)
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูลไฟล์เอกสารสรุปเนื้อหา';
 
@@ -426,7 +426,7 @@ CREATE TABLE `users_sheets_favorites` (
 -- ====================
 CREATE TABLE `posts` (
   `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id โพสต์',
-  `sheet_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id เอกสารสรุปที่อ้างถึงในตาราง sheets',
+  `sheet_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci COMMENT 'เก็บ id เอกสารสรุปที่อ้างถึงในตาราง sheets',
   `user_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id เอกสารสรุปที่อ้างถึงในตาราง users',
   `content` TEXT NOT NULL COMMENT 'เก็บเนื้อหาของโพสต์',
   `like_count` INT NOT NULL DEFAULT 0 COMMENT 'เก็บจำนวนไลค์',
@@ -601,11 +601,11 @@ CREATE TABLE `users_plans` (
   DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูลการสมัครสมาชิกของผู้ใช้';
 
 
-
--- =========================================
+-- ====================
 -- Triggers
--- =========================================
-DELIMITER $$
+-- ====================
+@delimiter $$
+
 CREATE TRIGGER before_insert_roles
 BEFORE INSERT ON `roles`
 FOR EACH ROW
@@ -830,4 +830,5 @@ BEGIN
     SET NEW.`id` = UUIDV7();
   END IF;
 END$$
-DELIMITER ;
+
+@delimiter ;

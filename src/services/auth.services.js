@@ -2,13 +2,23 @@ import bcrypt from "bcrypt";
 import { sequelize } from "../configs/sequelize.configs.js";
 import { repository as usersRepository } from "../repositories/users.repositories.js";
 import { repository as rolesRepository } from "../repositories/roles.repositories.js";
+import { repository as sessionsRepository } from "../repositories/sessions.repositories.js";
+import { repository as tokensRepository } from "../repositories/tokens.repositories.js";
 import { RESPONSE_MESSAGES } from "../constants/response.constant.js";
 import { HTTP_STATUS } from "../constants/http_status.constants.js";
 import { responseTemplates } from "../utils/response.utils.js";
 import { mapping as usersMapping } from "../models/mapping/users.mapping.js";
+import { STATUS_FLAG } from "../constants/status_flag.constants.js";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyAccessToken,
+  verifyRefreshToken,
+} from "../utils/jwt.utils.js";
+import { accessTokenExpireMs, refreshTokenExpireMs } from "../utils/timeConverter.utils.js";
 
 export const service = {
-  async register(req, _res) {
+  async register(req, res) {
     const transaction = await sequelize.transaction();
     try {
       const { username, email, password, confirmPassword } = req.body;
@@ -17,7 +27,7 @@ export const service = {
         email,
         transaction
       );
-      switch (existingEmail.status.code) {
+      switch (existingEmail.code) {
         case HTTP_STATUS.OK.code:
           return responseTemplates.setConflictResponse(
             RESPONSE_MESSAGES.EMAIL_ALREADY_ERROR
@@ -34,7 +44,7 @@ export const service = {
         username,
         transaction
       );
-      switch (existingUsername.status.code) {
+      switch (existingUsername.code) {
         case HTTP_STATUS.OK.code:
           return responseTemplates.setConflictResponse(
             RESPONSE_MESSAGES.USERNAME_ALREADY_ERROR
@@ -57,7 +67,7 @@ export const service = {
         process.env.DEFAULT_ROLE,
         transaction
       );
-      switch (findRole.status.code) {
+      switch (findRole.code) {
         case HTTP_STATUS.OK.code:
           break;
         case HTTP_STATUS.NOT_FOUND.code:
@@ -84,7 +94,7 @@ export const service = {
         findRole.result.id,
         transaction
       );
-      switch (createUser.status.code) {
+      switch (createUser.code) {
         case HTTP_STATUS.CREATED.code:
           break;
         case HTTP_STATUS.FAILED.code:
@@ -98,7 +108,7 @@ export const service = {
         createUser.result.id,
         transaction
       );
-      switch (findUserById.status.code) {
+      switch (findUserById.code) {
         case HTTP_STATUS.OK.code:
           break;
         case HTTP_STATUS.NOT_FOUND.code:
@@ -123,7 +133,7 @@ export const service = {
     }
   },
 
-  async login(req, _res) {
+  async login(req, res) {
     const transaction = await sequelize.transaction();
     try {
       const { usernameOrEmail, password } = req.body;
@@ -131,7 +141,7 @@ export const service = {
         usernameOrEmail,
         transaction
       );
-      switch (findUser.status.code) {
+      switch (findUser.code) {
         case HTTP_STATUS.OK.code:
           break;
         case HTTP_STATUS.NOT_FOUND.code:
@@ -147,14 +157,14 @@ export const service = {
           );
       }
 
-      if (!findUser || findUser.status.code === HTTP_STATUS.NOT_FOUND.code) {
+      if (!findUser || findUser.code === HTTP_STATUS.NOT_FOUND.code) {
         await transaction.rollback();
         return responseTemplates.setUnauthorizedResponse(
           RESPONSE_MESSAGES.AUTHENTICATION_INVALID_ERROR
         );
       }
 
-      if (findUser.status.code !== HTTP_STATUS.OK.code) {
+      if (findUser.code !== HTTP_STATUS.OK.code) {
         await transaction.rollback();
         return responseTemplates.setInternalServerErrorResponse(
           RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR
@@ -162,7 +172,7 @@ export const service = {
       }
 
       const user = findUser.result;
-      const hashedPassword =user.password.toString();
+      const hashedPassword = user.password.toString();
       const isPasswordValid = await bcrypt.compare(password, hashedPassword);
 
       if (isPasswordValid === false) {
@@ -172,8 +182,52 @@ export const service = {
         );
       }
 
+      if (user.status_flag !== STATUS_FLAG.ACTIVE) {
+        await transaction.rollback();
+        return responseTemplates.setUnauthorizedResponse(
+          RESPONSE_MESSAGES.USER_NOT_ACTIVE_ERROR
+        );
+      }
+
+      const accessToken = generateAccessToken(user.id, user.role_id);
+      const refreshToken = generateRefreshToken(user.id);
+
+      const createSession = await sessionsRepository.createSession(
+        refreshToken,
+        user.id,
+        req.useragent,
+        refreshTokenExpireMs()
+      );
+
+      const sessionId = createSession.result.id;
+      await tokensRepository.createToken(
+        accessToken,
+        sessionId,
+        accessTokenExpireMs()
+      );
+
+      const result = await usersRepository.findById(user.id, transaction);
+      switch (result.code) {
+        case HTTP_STATUS.OK.code:
+          break;
+        case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
+          return responseTemplates.setNotFoundResponse(
+            RESPONSE_MESSAGES.DATA_NOT_FOUND
+          );
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR
+          );
+      }
+      const data = {
+        result: result.result,
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+      }
       await transaction.commit();
-      const mapData = await usersMapping.mapUser(user);
+      const mapData = await usersMapping.mapUserDetail(data);
       return responseTemplates.setOKResponse(mapData);
     } catch (error) {
       await transaction.rollback();
@@ -182,5 +236,5 @@ export const service = {
         RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR
       );
     }
-  }
+  },
 };

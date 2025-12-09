@@ -20,7 +20,7 @@ export const Tokens = sequelize.define(
       },
     },
     access_token: {
-      type: DataTypes.BLOB("tiny"),
+      type: DataTypes.STRING(512),
       allowNull: false,
       unique: true,
     },
@@ -44,4 +44,3 @@ export const Tokens = sequelize.define(
     timestamps: false,
   }
 );
-

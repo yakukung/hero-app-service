@@ -24,44 +24,9 @@ import { UsersPayments } from "./users_payments.model.js";
 import { Plans } from "./plans.model.js";
 import { UsersPlans } from "./users_plans.model.js";
 
-export const models = {
-  Roles,
-  Permissions,
-  Scopes,
-  Users,
-  UserProviders,
-  Sessions,
-  Tokens,
-  Categories,
-  Keywords,
-  Sheets,
-  SheetsCategories,
-  SheetsKeywords,
-  SheetsFiles,
-  SheetsQuestions,
-  SheetsAnswers,
-  UsersSheetsAnswers,
-  UsersSheetsFavorites,
-  Posts,
-  PostsLikes,
-  PostsComments,
-  PostsShares,
-  UsersReports,
-  UsersPayments,
-  Plans,
-  UsersPlans,
-};
-
-let associationsApplied = false;
-
-export const applyAssociations = () => {
-  if (associationsApplied) {
-    return models;
-  }
-
   // Roles & Permissions via scopes
   Roles.hasMany(Users, { foreignKey: "role_id", as: "users" });
-  Users.belongsTo(Roles, { foreignKey: "role_id", as: "role" });
+  Users.belongsTo(Roles, { foreignKey: "role_id", as: "roles" });
 
   Roles.belongsToMany(Permissions, {
     through: Scopes,
@@ -255,7 +220,33 @@ export const applyAssociations = () => {
   UsersPlans.belongsTo(Users, { foreignKey: "user_id", as: "user" });
   UsersPlans.belongsTo(Plans, { foreignKey: "plan_id", as: "plan" });
 
-  associationsApplied = true;
-  return models;
+
+
+export const models = {
+  Roles,
+  Permissions,
+  Scopes,
+  Users,
+  UserProviders,
+  Sessions,
+  Tokens,
+  Categories,
+  Keywords,
+  Sheets,
+  SheetsCategories,
+  SheetsKeywords,
+  SheetsFiles,
+  SheetsQuestions,
+  SheetsAnswers,
+  UsersSheetsAnswers,
+  UsersSheetsFavorites,
+  Posts,
+  PostsLikes,
+  PostsComments,
+  PostsShares,
+  UsersReports,
+  UsersPayments,
+  Plans,
+  UsersPlans,
 };
 

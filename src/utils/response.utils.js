@@ -5,8 +5,8 @@ const responseUtils = (http_code, http_message, data, error) => {
     code: http_code,
     message: http_message,
     timestamp: new Date(),
-    error: error || null,
-    data: data || null,
+    error: error,
+    data: data,
   };
 };
 
@@ -96,9 +96,10 @@ export const responseTemplates = {
 export const responseRepository = {
     setResult(status, result) {
         return{
-            status,
-            result,
+            code: status.code,
+            message: status.message,
             timestamp: new Date(),
+            result: result,
         }
     }
 }
