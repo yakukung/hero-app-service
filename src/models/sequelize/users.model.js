@@ -46,13 +46,13 @@ export const Users = sequelize.define(
     visible_flag: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: false,
+      defaultValue: true,
     },
     status_flag: {
       type: DataTypes.ENUM,
       values: Object.values(STATUS_FLAG),
       allowNull: false,
-      defaultValue: STATUS_FLAG.PENDING,
+      defaultValue: STATUS_FLAG.ACTIVE,
     },
     created_at: {
       type: DataTypes.DATE(3),

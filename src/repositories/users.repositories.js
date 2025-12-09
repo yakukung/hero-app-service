@@ -7,10 +7,25 @@ export const repository = {
   async findById(id, transaction) {
     try {
       const result = await sequelize.Users.findOne({
+        include: [
+          {
+            model: sequelize.Roles,
+            as: "roles",
+          },
+          {
+            model: sequelize.Sessions,
+            as: "sessions",
+            include: [
+              {
+                model: sequelize.Tokens,
+                as: "tokens",
+              },
+            ],
+          },
+        ],
         where: { id },
         transaction,
       });
-
       if (result === null) {
         return responseRepository.setResult(HTTP_STATUS.NOT_FOUND, null);
       }
@@ -59,12 +74,15 @@ export const repository = {
 
   async createUser(username, email, password, role_id, transaction) {
     try {
-      const result = await sequelize.Users.create({
-        username,
-        email,
-        password,
-        role_id,
-      }, { transaction });
+      const result = await sequelize.Users.create(
+        {
+          username,
+          email,
+          password,
+          role_id,
+        },
+        { transaction }
+      );
 
       if (result === null) {
         return responseRepository.setResult(HTTP_STATUS.FAILED, null);
@@ -73,7 +91,10 @@ export const repository = {
       return responseRepository.setResult(HTTP_STATUS.CREATED, result);
     } catch (error) {
       console.log(error);
-      return responseRepository.setResult(HTTP_STATUS.INTERNAL_SERVER_ERROR, null);
+      return responseRepository.setResult(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        null
+      );
     }
   },
 };

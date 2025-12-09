@@ -36,6 +36,12 @@ export const RESPONSE_MESSAGES = Object.freeze({
       en: "token is expired.",
     },
   },
+  TOKEN_SYNTAX_ERROR_INTERNAL_ERROR: {
+    message: {
+      th: "token ไม่ถูกต้อง",
+      en: "token is invalid.",
+    },
+  },
   OLD_PASSWORD_INVALID_ERROR: {
     message: {
       th: "รหัสผ่านเดิมไม่ถูกต้อง",
@@ -52,6 +58,12 @@ export const RESPONSE_MESSAGES = Object.freeze({
     message: {
       th: "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
       en: "This email or password is an incorrect.",
+    },
+  },
+  USER_NOT_ACTIVE_ERROR: {
+    message: {
+      th: "บัญชีนี้ไม่สามารถใช้งานได้",
+      en: "This account cannot be used.",
     },
   },
   PASSWORD_NOT_MATCH_ERROR: {

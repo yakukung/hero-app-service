@@ -20,9 +20,8 @@ export const Sessions = sequelize.define(
       },
     },
     refresh_token: {
-      type: DataTypes.BLOB("tiny"),
+      type: DataTypes.STRING(512),
       allowNull: false,
-      unique: true,
     },
     issued_at: {
       type: DataTypes.DATE(3),
