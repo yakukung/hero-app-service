@@ -47,7 +47,7 @@ const verifyAccessToken = (accessToken) => {
       accessToken,
       process.env.JWT_SECRET_ACCESS_TOKEN
     );
-    return decoded;
+    return responseTemplates.setOKResponse(decoded);
     
   } catch (error) {
     switch (error.name) {
@@ -77,7 +77,7 @@ const verifyRefreshToken = (refreshToken) => {
       refreshToken,
       process.env.JWT_SECRET_REFRESH_TOKEN
     );
-    return decoded;
+    return responseTemplates.setOKResponse(decoded);
 
   } catch (error) {
     switch (error.name) {

@@ -42,7 +42,6 @@ export const mapping = {
     }
   },
   async mapUserDetail(data) {
-    console.log("🚀 ~ data:", data.result)
     const role = data.result.roles ? await mapRoleResponse.mapRole(data.result.roles) : null; 
     try {
       return {

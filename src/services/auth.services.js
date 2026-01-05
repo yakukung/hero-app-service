@@ -190,7 +190,9 @@ export const service = {
       }
 
       const accessToken = generateAccessToken(user.id, user.role_id);
+      console.log("🚀 ~ accessToken:", accessToken)
       const refreshToken = generateRefreshToken(user.id);
+      console.log("🚀 ~ refreshToken:", refreshToken)
 
       const createSession = await sessionsRepository.createSession(
         refreshToken,

@@ -30,11 +30,16 @@ export const Sheets = sequelize.define(
     },
     rating: {
       type: DataTypes.DECIMAL(3, 1),
+      defaultValue: 0,
       allowNull: true,
     },
     price: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: true,
+    },
+    course: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
     },
     visible_flag: {
       type: DataTypes.BOOLEAN,
