@@ -1,49 +1,38 @@
 import { DataTypes } from "sequelize";
-import { sequelize } from "../../configs/sequelize.configs.js";
-import { AUTH_PROVIDER } from "../../constants/auth_provider.constants.js";
 import { v7 as uuidv7 } from "uuid";
+import { sequelize } from "../../configs/sequelize.configs.js";
 import { STATUS_FLAG } from "../../constants/status_flag.constants.js";
 
-export const Users = sequelize.define(
-  "users",
+export const SheetsReviews = sequelize.define(
+  "sheets_reviews",
   {
     id: {
       type: DataTypes.UUID,
-      primaryKey: true,
       allowNull: false,
+      primaryKey: true,
       defaultValue: () => uuidv7(),
     },
-    username: {
-      type: DataTypes.STRING(30),
-      allowNull: true,
-    },
-    email: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-    },
-    password: {
-      type: DataTypes.BLOB,
-      allowNull: true,
-    },
-    profile_image: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    auth_provider: {
-      type: DataTypes.ENUM,
-      values: [AUTH_PROVIDER.EMAIL_PASSWORD, AUTH_PROVIDER.GOOGLE],
-      defaultValue: AUTH_PROVIDER.EMAIL_PASSWORD,
-      allowNull: false,
-    },
-    role_id: {
+    sheet_id: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
-        model: "roles",
+        model: "sheets",
         key: "id",
       },
     },
-    point: {
+    user_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: "users",
+        key: "id",
+      },
+    },
+    content: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    score: {
       type: DataTypes.INTEGER,
       allowNull: false,
       defaultValue: 0,
@@ -84,14 +73,8 @@ export const Users = sequelize.define(
 
   },
   {
-    tableName: "users",
+    tableName: "sheets_reviews",
     timestamps: false,
-    indexes: [
-      {
-        name: "unique_email",
-        unique: true,
-        fields: ["email"],
-      },
-    ],
   }
 );
+

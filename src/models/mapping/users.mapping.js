@@ -1,4 +1,4 @@
-import {mapping as mapRoleResponse} from './roles.mapping.js'
+import { mapping as mapRoleResponse } from "./roles.mapping.js";
 export const mapping = {
   async mapUsers(data, count) {
     try {
@@ -42,7 +42,9 @@ export const mapping = {
     }
   },
   async mapUserDetail(data) {
-    const role = data.result.roles ? await mapRoleResponse.mapRole(data.result.roles) : null; 
+    const role = data.result.roles
+      ? await mapRoleResponse.mapRole(data.result.roles)
+      : null;
     try {
       return {
         id: data.result.id,
@@ -51,9 +53,12 @@ export const mapping = {
         profile_image: data.result.profile_image,
         auth_provider: data.result.auth_provider,
         roles: role,
+        point: data.result.point,
         tokens: {
           access_token: data.accessToken,
           refresh_token: data.refreshToken,
+          access_token_expires_at: data.accessTokenExpiresAt,
+          refresh_token_expires_at: data.refreshTokenExpiresAt,
         },
         flag: {
           visible_flag: data.result.visible_flag,

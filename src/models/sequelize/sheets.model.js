@@ -37,10 +37,6 @@ export const Sheets = sequelize.define(
       type: DataTypes.DECIMAL(10, 2),
       allowNull: true,
     },
-    course: {
-      type: DataTypes.STRING(255),
-      allowNull: false,
-    },
     visible_flag: {
       type: DataTypes.BOOLEAN,
       allowNull: false,

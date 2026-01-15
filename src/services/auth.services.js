@@ -15,7 +15,10 @@ import {
   verifyAccessToken,
   verifyRefreshToken,
 } from "../utils/jwt.utils.js";
-import { accessTokenExpireMs, refreshTokenExpireMs } from "../utils/timeConverter.utils.js";
+import {
+  accessTokenExpireMs,
+  refreshTokenExpireMs,
+} from "../utils/timeConverter.utils.js";
 
 export const service = {
   async register(req, res) {
@@ -190,9 +193,9 @@ export const service = {
       }
 
       const accessToken = generateAccessToken(user.id, user.role_id);
-      console.log("🚀 ~ accessToken:", accessToken)
       const refreshToken = generateRefreshToken(user.id);
-      console.log("🚀 ~ refreshToken:", refreshToken)
+      const accessTokenExpiresAt = accessTokenExpireMs();
+      const refreshTokenExpiresAt = refreshTokenExpireMs();
 
       const createSession = await sessionsRepository.createSession(
         refreshToken,
@@ -227,7 +230,9 @@ export const service = {
         result: result.result,
         accessToken: accessToken,
         refreshToken: refreshToken,
-      }
+        accessTokenExpiresAt: accessTokenExpiresAt,
+        refreshTokenExpiresAt: refreshTokenExpiresAt,
+      };
       await transaction.commit();
       const mapData = await usersMapping.mapUserDetail(data);
       return responseTemplates.setOKResponse(mapData);
