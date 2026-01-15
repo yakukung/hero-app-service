@@ -55,11 +55,43 @@ export const Keywords = sequelize.define(
       type: DataTypes.DATE(3),
       allowNull: true,
     },
-
   },
   {
     tableName: "keywords",
     timestamps: false,
+
+    hooks: {
+      beforeCreate: async (data) => {
+        data.created_at = new Date();
+      },
+      beforeUpdate: async (data) => {
+        data.updated_at = new Date();
+      },
+      beforeBulkUpdate: async (data) => {
+        data.attributes.updated_at = new Date();
+        data.fields.push("updated_at");
+        data.attributes.updated_by = "SYSTEM";
+        data.fields.push("updated_by");
+
+        if (data.attributes.status_flag) {
+          if (
+            data.attributes.status_flag.includes(
+              STATUS_FLAG.ACTIVE,
+              STATUS_FLAG.INACTIVE
+            )
+          ) {
+            data.attributes.visible_flag = true;
+            data.fields.push("visible_flag");
+            data.attributes.status_modified_at = new Date();
+            data.fields.push("status_modified_at");
+          } else {
+            data.attributes.visible_flag = false;
+            data.fields.push("visible_flag");
+            data.attributes.status_modified_at = new Date();
+            data.fields.push("status_modified_at");
+          }
+        }
+      },
+    },
   }
 );
-

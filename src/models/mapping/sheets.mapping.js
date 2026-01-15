@@ -1,4 +1,8 @@
-import {mapping as mapKeywordsResponse} from './keywords.mapping.js'
+import { mapping as mapKeywordsResponse } from "./keywords.mapping.js";
+import { mapping as mapSheetsQuestionsResponse } from "./sheets_questions.mapping.js";
+import { mapping as mapSheetsFilesResponse } from "./sheets_files.mapping.js";
+import { mapping as mapCategoriesResponse } from "./categories.mapping.js";
+import { mapping as mapUsersResponse } from "./users.mapping.js";
 export const mapping = {
   async mapSheets(data, count) {
     try {
@@ -60,16 +64,36 @@ export const mapping = {
   },
   async mapSheetDetail(data) {
     try {
-      const keywords = data.keywords ? await mapKeywordsResponse.mapKeywordsDataOnly(data.keywords) : null; 
+      const keywords = data.keywords
+        ? await mapKeywordsResponse.mapKeywordsDataOnly(data.keywords)
+        : null;
+      const questions = data.questions
+        ? await mapSheetsQuestionsResponse.mapSheetsQuestionsDetail(
+            data.questions
+          )
+        : null;
+      const files = data.files
+        ? await mapSheetsFilesResponse.mapSheetsFilesDetail(data.files)
+        : null;
+      const categories = data.categories
+        ? await mapCategoriesResponse.mapCategoriesDetail(data.categories)
+        : null;
+      const author = data.author
+        ? await mapUsersResponse.mapUser(data.author)
+        : null;
       return {
         id: data.id,
         author_id: data.author_id,
+        author_name: author.username,
         title: data.title,
         description: data.description,
         rating: data.rating,
         price: data.price,
         course: data.course,
+        categories: categories,
         keywords: keywords,
+        questions: questions,
+        files: files,
         flag: {
           visible_flag: data.visible_flag,
           status_flag: data.status_flag,
