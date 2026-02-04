@@ -26,16 +26,16 @@ export const service = {
           break;
         case HTTP_STATUS.NOT_FOUND.code:
           return responseTemplates.setNotFoundResponse(
-            RESPONSE_MESSAGES.NOT_FOUND
+            RESPONSE_MESSAGES.NOT_FOUND,
           );
         default:
           return responseTemplates.setInternalServerErrorResponse(
-            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
           );
       }
       const mappedSheet = await sheetsMapping.mapSheetsDetail(
         result.result.data,
-        result.result.count
+        result.result.count,
       );
       return responseTemplates.setOKResponse(mappedSheet);
     } catch (error) {
@@ -53,11 +53,11 @@ export const service = {
           break;
         case HTTP_STATUS.NOT_FOUND.code:
           return responseTemplates.setNotFoundResponse(
-            RESPONSE_MESSAGES.DATA_NOT_FOUND
+            RESPONSE_MESSAGES.DATA_NOT_FOUND,
           );
         default:
           return responseTemplates.setInternalServerErrorResponse(
-            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
           );
       }
       await transaction.commit();
@@ -67,7 +67,7 @@ export const service = {
       await transaction.rollback();
       console.error(error);
       return responseTemplates.setInternalServerErrorResponse(
-        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR
+        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
       );
     }
   },
@@ -82,7 +82,7 @@ export const service = {
 
       const findCategory = await categoryRepository.findById(
         category,
-        transaction
+        transaction,
       );
       switch (findCategory.code) {
         case HTTP_STATUS.OK.code:
@@ -90,12 +90,12 @@ export const service = {
         case HTTP_STATUS.NOT_FOUND.code:
           await deleteUploadedFiles(req.files);
           return responseTemplates.setNotFoundResponse(
-            RESPONSE_MESSAGES.NOT_FOUND
+            RESPONSE_MESSAGES.NOT_FOUND,
           );
         default:
           await deleteUploadedFiles(req.files);
           return responseTemplates.setInternalServerErrorResponse(
-            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
           );
       }
 
@@ -104,14 +104,14 @@ export const service = {
         title,
         description,
         price,
-        transaction
+        transaction,
       );
       switch (createSheet.code) {
         case HTTP_STATUS.CREATED.code:
           const createSheetCategory = await sheetsCategoriesRepository.create(
             createSheet.result.id,
             category,
-            transaction
+            transaction,
           );
           switch (createSheetCategory.code) {
             case HTTP_STATUS.CREATED.code:
@@ -119,19 +119,19 @@ export const service = {
             case HTTP_STATUS.FAILED.code:
               await deleteUploadedFiles(req.files);
               return responseTemplates.setFailedResponse(
-                RESPONSE_MESSAGES.FAILED
+                RESPONSE_MESSAGES.FAILED,
               );
             default:
               await deleteUploadedFiles(req.files);
               return responseTemplates.setInternalServerErrorResponse(
-                RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR
+                RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
               );
           }
 
           for (const keyword of keywords) {
             const findKeyword = await keywordRepository.findByKeyword(
               keyword,
-              transaction
+              transaction,
             );
             switch (findKeyword.code) {
               case HTTP_STATUS.OK.code:
@@ -140,7 +140,7 @@ export const service = {
               case HTTP_STATUS.NOT_FOUND.code:
                 const createKeyword = await keywordRepository.createKeyword(
                   keyword,
-                  transaction
+                  transaction,
                 );
                 switch (createKeyword.code) {
                   case HTTP_STATUS.CREATED.code:
@@ -149,19 +149,19 @@ export const service = {
                   case HTTP_STATUS.FAILED.code:
                     await deleteUploadedFiles(req.files);
                     return responseTemplates.setFailedResponse(
-                      RESPONSE_MESSAGES.FAILED
+                      RESPONSE_MESSAGES.FAILED,
                     );
                   default:
                     await deleteUploadedFiles(req.files);
                     return responseTemplates.setInternalServerErrorResponse(
-                      RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR
+                      RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
                     );
                 }
                 break;
               default:
                 await deleteUploadedFiles(req.files);
                 return responseTemplates.setInternalServerErrorResponse(
-                  RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR
+                  RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
                 );
             }
           }
@@ -171,14 +171,14 @@ export const service = {
               await sheetsKeywordsRepository.createSheetKeyword(
                 createSheet.result.id,
                 keyword,
-                transaction
+                transaction,
               );
             switch (createSheetKeyword.code) {
               case HTTP_STATUS.CREATED.code:
                 const updateUsageCount =
                   await keywordRepository.updateUsageCount(
                     keyword,
-                    transaction
+                    transaction,
                   );
                 switch (updateUsageCount.code) {
                   case HTTP_STATUS.OK.code:
@@ -186,24 +186,24 @@ export const service = {
                   case HTTP_STATUS.FAILED.code:
                     await deleteUploadedFiles(req.files);
                     return responseTemplates.setFailedResponse(
-                      RESPONSE_MESSAGES.FAILED
+                      RESPONSE_MESSAGES.FAILED,
                     );
                   default:
                     await deleteUploadedFiles(req.files);
                     return responseTemplates.setInternalServerErrorResponse(
-                      RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR
+                      RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
                     );
                 }
                 break;
               case HTTP_STATUS.FAILED.code:
                 await deleteUploadedFiles(req.files);
                 return responseTemplates.setFailedResponse(
-                  RESPONSE_MESSAGES.FAILED
+                  RESPONSE_MESSAGES.FAILED,
                 );
               default:
                 await deleteUploadedFiles(req.files);
                 return responseTemplates.setInternalServerErrorResponse(
-                  RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR
+                  RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
                 );
             }
           }
@@ -214,7 +214,7 @@ export const service = {
                 question.index,
                 question.question_text,
                 question.explanation,
-                transaction
+                transaction,
               );
               switch (createQuestion.code) {
                 case HTTP_STATUS.CREATED.code:
@@ -224,7 +224,7 @@ export const service = {
                       answer.index,
                       answer.answer_text,
                       answer.is_correct,
-                      transaction
+                      transaction,
                     );
                     switch (createAnswer.code) {
                       case HTTP_STATUS.CREATED.code:
@@ -232,12 +232,12 @@ export const service = {
                       case HTTP_STATUS.FAILED.code:
                         await deleteUploadedFiles(req.files);
                         return responseTemplates.setFailedResponse(
-                          RESPONSE_MESSAGES.FAILED
+                          RESPONSE_MESSAGES.FAILED,
                         );
                       default:
                         await deleteUploadedFiles(req.files);
                         return responseTemplates.setInternalServerErrorResponse(
-                          RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR
+                          RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
                         );
                     }
                   }
@@ -245,12 +245,12 @@ export const service = {
                 case HTTP_STATUS.FAILED.code:
                   await deleteUploadedFiles(req.files);
                   return responseTemplates.setFailedResponse(
-                    RESPONSE_MESSAGES.FAILED
+                    RESPONSE_MESSAGES.FAILED,
                   );
                 default:
                   await deleteUploadedFiles(req.files);
                   return responseTemplates.setInternalServerErrorResponse(
-                    RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR
+                    RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
                   );
               }
             }
@@ -261,7 +261,6 @@ export const service = {
             for (const file of req.files) {
               const checksum = await calculateChecksum(file.path);
 
-              // Move file from temp to sheets/<id> folder
               const newDir = `uploads/sheets/${createSheet.result.id}`;
               const newPath = await moveFile(file.path, newDir);
 
@@ -272,40 +271,35 @@ export const service = {
                 newPath,
                 checksum,
                 index,
-                transaction
+                transaction,
               );
 
               if (createFile.code !== HTTP_STATUS.CREATED.code) {
-                // If DB save fails, we should technically delete the moved file too
-                // But existing deleteUploadedFiles uses req.files which points to old path?
-                // Actually moveFile renames, so old path is gone.
-                // We should update file.path in req.files so deleteUploadedFiles works
                 file.path = newPath;
                 await deleteUploadedFiles(req.files);
                 return responseTemplates.setFailedResponse(
-                  RESPONSE_MESSAGES.FAILED
+                  RESPONSE_MESSAGES.FAILED,
                 );
               }
-              // Update path in req.files for successful case too, just in case
               file.path = newPath;
               index++;
             }
           }
           const findSheet = await sheetsRepository.findById(
             createSheet.result.id,
-            transaction
+            transaction,
           );
           await transaction.commit();
 
           if (findSheet.code !== HTTP_STATUS.OK.code) {
             await deleteUploadedFiles(req.files);
             return responseTemplates.setInternalServerErrorResponse(
-              RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR
+              RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
             );
           }
 
           const mappedSheet = await sheetsMapping.mapSheetDetail(
-            findSheet.result
+            findSheet.result,
           );
           return responseTemplates.setCreatedResponse(mappedSheet);
         case HTTP_STATUS.FAILED.code:
@@ -314,7 +308,7 @@ export const service = {
         default:
           await deleteUploadedFiles(req.files);
           return responseTemplates.setInternalServerErrorResponse(
-            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
           );
       }
     } catch (error) {
@@ -322,7 +316,7 @@ export const service = {
       await deleteUploadedFiles(req.files);
       console.error(error);
       return responseTemplates.setInternalServerErrorResponse(
-        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR
+        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
       );
     }
   },
