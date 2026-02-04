@@ -157,11 +157,102 @@ export const repository = {
       );
     }
   },
-  async updateProfile(uid, profile_image, transaction) {
+  async updateProfileImage(uid, profile_image, transaction) {
     try {
       const result = await sequelize.Users.update(
         {
           profile_image,
+        },
+        { where: { id: uid }, transaction },
+      );
+
+      if (result === null) {
+        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+      }
+
+      return responseRepository.setResult(HTTP_STATUS.OK, result);
+    } catch (error) {
+      console.log(error);
+      return responseRepository.setResult(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        null,
+      );
+    }
+  },
+  async updateProfile(uid, username, password, profile_image, transaction) {
+    try {
+      const updateData = {};
+      if (username !== undefined) updateData.username = username;
+      if (password !== undefined) updateData.password = password;
+      if (profile_image !== undefined) updateData.profile_image = profile_image;
+
+      const result = await sequelize.Users.update(updateData, {
+        where: { id: uid },
+        transaction,
+      });
+
+      if (result === null) {
+        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+      }
+
+      return responseRepository.setResult(HTTP_STATUS.OK, result);
+    } catch (error) {
+      console.log(error);
+      return responseRepository.setResult(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        null,
+      );
+    }
+  },
+  async updatePassword(uid, password, transaction) {
+    try {
+      const result = await sequelize.Users.update(
+        {
+          password,
+        },
+        { where: { id: uid }, transaction },
+      );
+
+      if (result === null) {
+        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+      }
+
+      return responseRepository.setResult(HTTP_STATUS.OK, result);
+    } catch (error) {
+      console.log(error);
+      return responseRepository.setResult(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        null,
+      );
+    }
+  },
+  async updateUsername(uid, username, transaction) {
+    try {
+      const result = await sequelize.Users.update(
+        {
+          username,
+        },
+        { where: { id: uid }, transaction },
+      );
+
+      if (result === null) {
+        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+      }
+
+      return responseRepository.setResult(HTTP_STATUS.OK, result);
+    } catch (error) {
+      console.log(error);
+      return responseRepository.setResult(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        null,
+      );
+    }
+  },
+  async updateEmail(uid, email, transaction) {
+    try {
+      const result = await sequelize.Users.update(
+        {
+          email,
         },
         { where: { id: uid }, transaction },
       );
