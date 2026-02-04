@@ -2,6 +2,7 @@ import { ValidationError } from "sequelize";
 import { HTTP_STATUS } from "../constants/http_status.constants.js";
 import { models as sequelize } from "../models/sequelize/associations.js";
 import { responseRepository } from "../utils/response.utils.js";
+import { STATUS_FLAG } from "../constants/status_flag.constants.js";
 
 export const repository = {
   async findById(id, transaction) {
@@ -80,8 +81,10 @@ export const repository = {
           email,
           password,
           role_id,
+          visible_flag: false,
+          status_flag: STATUS_FLAG.PENDING,
         },
-        { transaction }
+        { transaction },
       );
 
       if (result === null) {
@@ -93,7 +96,86 @@ export const repository = {
       console.log(error);
       return responseRepository.setResult(
         HTTP_STATUS.INTERNAL_SERVER_ERROR,
-        null
+        null,
+      );
+    }
+  },
+
+  async createUserByProvider(
+    profile_image,
+    auth_provider,
+    role_id,
+    status_flag,
+    username,
+    transaction,
+  ) {
+    try {
+      const result = await sequelize.Users.create(
+        {
+          auth_provider,
+          role_id,
+          status_flag,
+          profile_image,
+          username,
+        },
+        { transaction },
+      );
+
+      if (result === null) {
+        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+      }
+
+      return responseRepository.setResult(HTTP_STATUS.CREATED, result);
+    } catch (error) {
+      console.log(error);
+      return responseRepository.setResult(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        null,
+      );
+    }
+  },
+  async updateStatusUser(user_id, transaction) {
+    try {
+      const result = await sequelize.Users.update(
+        {
+          visible_flag: true,
+          status_flag: STATUS_FLAG.ACTIVE,
+        },
+        { where: { id: user_id }, transaction },
+      );
+
+      if (result === null) {
+        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+      }
+
+      return responseRepository.setResult(HTTP_STATUS.OK, result);
+    } catch (error) {
+      console.log(error);
+      return responseRepository.setResult(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        null,
+      );
+    }
+  },
+  async updateProfile(uid, profile_image, transaction) {
+    try {
+      const result = await sequelize.Users.update(
+        {
+          profile_image,
+        },
+        { where: { id: uid }, transaction },
+      );
+
+      if (result === null) {
+        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+      }
+
+      return responseRepository.setResult(HTTP_STATUS.OK, result);
+    } catch (error) {
+      console.log(error);
+      return responseRepository.setResult(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        null,
       );
     }
   },

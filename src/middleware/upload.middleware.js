@@ -2,7 +2,6 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 
-// Ensure upload directory exists
 const uploadDir = "uploads/";
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
@@ -11,8 +10,12 @@ if (!fs.existsSync(uploadDir)) {
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     let dest = "uploads/";
-    if (req.baseUrl.includes("/users") && req.user && req.user.id) {
-      dest = path.join(uploadDir, "users", req.user.id, "profiles");
+    if (req.baseUrl.includes("/users")) {
+      if (req.user && req.user.id) {
+        dest = path.join(uploadDir, "users", req.user.id, "profiles");
+      } else if (req.body && req.body.uid) {
+        dest = path.join(uploadDir, "users", req.body.uid, "profiles");
+      }
     } else if (req.baseUrl.includes("/sheets")) {
       if (req.params.id) {
         dest = path.join(uploadDir, "sheets", req.params.id);
@@ -30,7 +33,7 @@ const storage = multer.diskStorage({
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
     cb(
       null,
-      file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname)
+      file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname),
     );
   },
 });
