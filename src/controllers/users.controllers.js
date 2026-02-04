@@ -18,4 +18,36 @@ export const controller = {
       console.log(error);
     }
   },
+  async updateProfileImage(req, res) {
+    try {
+      const result = await usersService.updateProfileImage(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  async updatePassword(req, res) {
+    try {
+      const result = await usersService.updatePassword(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  async updateUsername(req, res) {
+    try {
+      const result = await usersService.updateUsername(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  async updateEmail(req, res) {
+    try {
+      const result = await usersService.updateEmail(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+    }
+  },
 };

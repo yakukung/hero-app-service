@@ -24,6 +24,18 @@ export const RESPONSE_MESSAGES = Object.freeze({
   //================================
   // Invalid Error
   //================================
+  INVALID_PASSWORD: {
+    message: {
+      th: "รหัสผ่านไม่ถูกต้อง",
+      en: "Invalid password.",
+    },
+  },
+  INVALID_OLD_PASSWORD: {
+    message: {
+      th: "รหัสผ่านเดิมไม่ถูกต้อง",
+      en: "Invalid old password.",
+    },
+  },
   TOKEN_INVALID_INVALID_ERROR: {
     message: {
       th: "token ไม่ถูกต้อง",
