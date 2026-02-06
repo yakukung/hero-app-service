@@ -20,7 +20,11 @@ const storage = multer.diskStorage({
       if (req.params.id) {
         dest = path.join(uploadDir, "sheets", req.params.id);
       } else {
-        dest = path.join(uploadDir, "sheets", "temp");
+        if (file.fieldname === "files") {
+          dest = path.join(uploadDir, "sheets", "temp", "original");
+        } else {
+          dest = path.join(uploadDir, "sheets", "temp");
+        }
       }
     }
 
@@ -31,10 +35,9 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(
-      null,
-      file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname),
-    );
+    const generatedName = uniqueSuffix + path.extname(file.originalname);
+    console.log("Generated filename:", generatedName);
+    cb(null, generatedName);
   },
 });
 
