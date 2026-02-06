@@ -17,6 +17,14 @@ export const controller = {
       console.log(error);
     }
   },
+  async getFavorites(req, res) {
+    try {
+      const result = await sheetsService.getFavorites(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+    }
+  },
   async create(req, res) {
     try {
       ["keywords", "questions"].forEach((key) => {
@@ -30,6 +38,22 @@ export const controller = {
       });
 
       const result = await sheetsService.create(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  async sheetFavorites(req, res) {
+    try {
+      const result = await sheetsService.sheetFavorites(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  async sheetUnFavorites(req, res) {
+    try {
+      const result = await sheetsService.sheetUnFavorites(req, res);
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);

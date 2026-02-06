@@ -8,9 +8,10 @@ export const repository = {
     format,
     size,
     originalPath,
+    thumbnailPath,
     checksum,
     index,
-    transaction
+    transaction,
   ) {
     try {
       const result = await SheetsFiles.create(
@@ -19,11 +20,11 @@ export const repository = {
           format: format,
           size: size,
           original_path: originalPath,
-          thumbnail_path: originalPath,
+          thumbnail_path: thumbnailPath,
           checksum: checksum,
           index: index,
         },
-        { transaction }
+        { transaction },
       );
       if (result === null) {
         return responseRepository.setResult(HTTP_STATUS.FAILED, null);

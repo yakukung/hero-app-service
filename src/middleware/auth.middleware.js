@@ -7,7 +7,7 @@ export const authMiddleware = async (req, res, next) => {
 
   if (!bearer) {
     const response = responseTemplates.setUnauthorizedResponse(
-      RESPONSE_MESSAGES.TOKEN_INVALID_INVALID_ERROR
+      RESPONSE_MESSAGES.TOKEN_INVALID_INVALID_ERROR,
     );
     return res.status(parseInt(response.code)).json(response);
   }
@@ -21,7 +21,7 @@ export const authMiddleware = async (req, res, next) => {
       return res.status(parseInt(accessToken.code)).json(accessToken);
     default:
       return responseTemplates.setInternalServerErrorResponse(
-        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR
+        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
       );
   }
 };

@@ -69,7 +69,7 @@ export const mapping = {
         : null;
       const questions = data.questions
         ? await mapSheetsQuestionsResponse.mapSheetsQuestionsDetail(
-            data.questions
+            data.questions,
           )
         : null;
       const files = data.files

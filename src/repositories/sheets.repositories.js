@@ -13,7 +13,7 @@ export const repository = {
           description,
           price,
         },
-        { transaction }
+        { transaction },
       );
 
       if (result === null) {
@@ -22,13 +22,13 @@ export const repository = {
 
       return responseRepository.setResult(
         HTTP_STATUS.CREATED,
-        result.dataValues
+        result.dataValues,
       );
     } catch (error) {
       console.log(error);
       return responseRepository.setResult(
         HTTP_STATUS.INTERNAL_SERVER_ERROR,
-        null
+        null,
       );
     }
   },
@@ -76,7 +76,7 @@ export const repository = {
       console.log(error);
       return responseRepository.setResult(
         HTTP_STATUS.INTERNAL_SERVER_ERROR,
-        null
+        null,
       );
     }
   },
@@ -128,7 +128,7 @@ export const repository = {
       console.log(error);
       return responseRepository.setResult(
         HTTP_STATUS.INTERNAL_SERVER_ERROR,
-        null
+        null,
       );
     }
   },
