@@ -68,8 +68,8 @@ export const RESPONSE_MESSAGES = Object.freeze({
   },
   AUTHENTICATION_INVALID_ERROR: {
     message: {
-      th: "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
-      en: "This email or password is an incorrect.",
+      th: "ชื่อผู้ใช้ อีเมล หรือรหัสผ่านไม่ถูกต้อง",
+      en: "Incorrect username, email, or password.",
     },
   },
   USER_NOT_ACTIVE_ERROR: {
