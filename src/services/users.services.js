@@ -31,10 +31,12 @@ export const service = {
         case HTTP_STATUS.OK.code:
           break;
         case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
           return responseTemplates.setNotFoundResponse(
             RESPONSE_MESSAGES.DATA_NOT_FOUND,
           );
         default:
+          await transaction.rollback();
           return responseTemplates.setInternalServerErrorResponse(
             RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
           );
@@ -149,10 +151,12 @@ export const service = {
         case HTTP_STATUS.OK.code:
           break;
         case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
           return responseTemplates.setNotFoundResponse(
             RESPONSE_MESSAGES.DATA_NOT_FOUND,
           );
         default:
+          await transaction.rollback();
           return responseTemplates.setInternalServerErrorResponse(
             RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
           );
@@ -163,6 +167,7 @@ export const service = {
         findUserById.result.password.toString(),
       );
       if (!comparePassword) {
+        await transaction.rollback();
         return responseTemplates.setUnauthorizedResponse(
           RESPONSE_MESSAGES.INVALID_OLD_PASSWORD,
         );
@@ -181,10 +186,12 @@ export const service = {
         case HTTP_STATUS.OK.code:
           break;
         case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
           return responseTemplates.setNotFoundResponse(
             RESPONSE_MESSAGES.DATA_NOT_FOUND,
           );
         default:
+          await transaction.rollback();
           return responseTemplates.setInternalServerErrorResponse(
             RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
           );
@@ -210,12 +217,14 @@ export const service = {
       );
       switch (findUserByUsername.code) {
         case HTTP_STATUS.OK.code:
+          await transaction.rollback();
           return responseTemplates.setConflictResponse(
             RESPONSE_MESSAGES.USERNAME_ALREADY_ERROR,
           );
         case HTTP_STATUS.NOT_FOUND.code:
           break;
         default:
+          await transaction.rollback();
           return responseTemplates.setInternalServerErrorResponse(
             RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
           );
@@ -231,10 +240,12 @@ export const service = {
         case HTTP_STATUS.OK.code:
           break;
         case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
           return responseTemplates.setNotFoundResponse(
             RESPONSE_MESSAGES.DATA_NOT_FOUND,
           );
         default:
+          await transaction.rollback();
           return responseTemplates.setInternalServerErrorResponse(
             RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
           );
@@ -260,17 +271,21 @@ export const service = {
         case HTTP_STATUS.OK.code:
           break;
         case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
           return responseTemplates.setNotFoundResponse(
             RESPONSE_MESSAGES.DATA_NOT_FOUND,
           );
         default:
+          await transaction.rollback();
           return responseTemplates.setInternalServerErrorResponse(
             RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
           );
       }
 
       const storedPassword = findUserById.result.password.toString();
+
       if (!storedPassword) {
+        await transaction.rollback();
         return responseTemplates.setUnauthorizedResponse(
           RESPONSE_MESSAGES.INVALID_PASSWORD,
         );
@@ -279,6 +294,7 @@ export const service = {
       const isPasswordValid = await bcrypt.compare(password, storedPassword);
 
       if (!isPasswordValid) {
+        await transaction.rollback();
         return responseTemplates.setUnauthorizedResponse(
           RESPONSE_MESSAGES.INVALID_PASSWORD,
         );
@@ -294,10 +310,12 @@ export const service = {
         case HTTP_STATUS.OK.code:
           break;
         case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
           return responseTemplates.setNotFoundResponse(
             RESPONSE_MESSAGES.DATA_NOT_FOUND,
           );
         default:
+          await transaction.rollback();
           return responseTemplates.setInternalServerErrorResponse(
             RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
           );

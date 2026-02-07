@@ -37,7 +37,7 @@ const generateRefreshToken = (user_id) => {
       algorithm: process.env.JWT_ALGORITHM,
       expiresIn: process.env.JWT_EXPIRE_REFRESH_TOKEN,
       notBefore: process.env.JWT_NOT_BEFORE,
-    }
+    },
   );
 };
 
@@ -45,27 +45,26 @@ const verifyAccessToken = (accessToken) => {
   try {
     const decoded = jwt.verify(
       accessToken,
-      process.env.JWT_SECRET_ACCESS_TOKEN
+      process.env.JWT_SECRET_ACCESS_TOKEN,
     );
     return responseTemplates.setOKResponse(decoded);
-    
   } catch (error) {
     switch (error.name) {
       case JWT_ERROR.TOKEN_INVALID:
         return responseTemplates.setUnauthorizedResponse(
-          RESPONSE_MESSAGES.TOKEN_INVALID_INVALID_ERROR
+          RESPONSE_MESSAGES.TOKEN_INVALID_INVALID_ERROR,
         );
       case JWT_ERROR.TOKEN_EXPIRED_ERROR:
         return responseTemplates.setUnauthorizedResponse(
-          RESPONSE_MESSAGES.TOKEN_EXPIRED_INVALID_ERROR
+          RESPONSE_MESSAGES.TOKEN_EXPIRED_INVALID_ERROR,
         );
       case JWT_ERROR.SYNTAX_ERROR:
         return responseTemplates.setUnauthorizedResponse(
-          RESPONSE_MESSAGES.TOKEN_SYNTAX_ERROR_INTERNAL_ERROR
+          RESPONSE_MESSAGES.TOKEN_SYNTAX_ERROR_INTERNAL_ERROR,
         );
       default:
         return responseTemplates.setBadRequestResponse(
-          RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR
+          RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
         );
     }
   }
@@ -75,27 +74,26 @@ const verifyRefreshToken = (refreshToken) => {
   try {
     const decoded = jwt.verify(
       refreshToken,
-      process.env.JWT_SECRET_REFRESH_TOKEN
+      process.env.JWT_SECRET_REFRESH_TOKEN,
     );
     return responseTemplates.setOKResponse(decoded);
-
   } catch (error) {
     switch (error.name) {
       case JWT_ERROR.TOKEN_INVALID:
         return responseTemplates.setUnauthorizedResponse(
-          RESPONSE_MESSAGES.TOKEN_INVALID_INVALID_ERROR
+          RESPONSE_MESSAGES.TOKEN_INVALID_INVALID_ERROR,
         );
       case JWT_ERROR.TOKEN_EXPIRED_ERROR:
         return responseTemplates.setUnauthorizedResponse(
-          RESPONSE_MESSAGES.TOKEN_EXPIRED_INVALID_ERROR
+          RESPONSE_MESSAGES.TOKEN_EXPIRED_INVALID_ERROR,
         );
       case JWT_ERROR.SYNTAX_ERROR:
         return responseTemplates.setUnauthorizedResponse(
-          RESPONSE_MESSAGES.TOKEN_SYNTAX_ERROR_INTERNAL_ERROR
+          RESPONSE_MESSAGES.TOKEN_SYNTAX_ERROR_INTERNAL_ERROR,
         );
       default:
         return responseTemplates.setBadRequestResponse(
-          RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR
+          RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
         );
     }
   }
