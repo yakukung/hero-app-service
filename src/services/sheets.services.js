@@ -56,10 +56,12 @@ export const service = {
         case HTTP_STATUS.OK.code:
           break;
         case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
           return responseTemplates.setNotFoundResponse(
             RESPONSE_MESSAGES.DATA_NOT_FOUND,
           );
         default:
+          await transaction.rollback();
           return responseTemplates.setInternalServerErrorResponse(
             RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
           );
@@ -87,10 +89,12 @@ export const service = {
         case HTTP_STATUS.OK.code:
           break;
         case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
           return responseTemplates.setNotFoundResponse(
             RESPONSE_MESSAGES.DATA_NOT_FOUND,
           );
         default:
+          await transaction.rollback();
           return responseTemplates.setInternalServerErrorResponse(
             RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
           );
@@ -129,11 +133,13 @@ export const service = {
         case HTTP_STATUS.OK.code:
           break;
         case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
           await deleteUploadedFiles(allFiles);
           return responseTemplates.setNotFoundResponse(
             RESPONSE_MESSAGES.NOT_FOUND,
           );
         default:
+          await transaction.rollback();
           await deleteUploadedFiles(allFiles);
           return responseTemplates.setInternalServerErrorResponse(
             RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
@@ -158,11 +164,13 @@ export const service = {
             case HTTP_STATUS.CREATED.code:
               break;
             case HTTP_STATUS.FAILED.code:
+              await transaction.rollback();
               await deleteUploadedFiles(allFiles);
               return responseTemplates.setFailedResponse(
                 RESPONSE_MESSAGES.FAILED,
               );
             default:
+              await transaction.rollback();
               await deleteUploadedFiles(allFiles);
               return responseTemplates.setInternalServerErrorResponse(
                 RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
@@ -188,11 +196,13 @@ export const service = {
                     keyword_id.push(createKeyword.result.id);
                     break;
                   case HTTP_STATUS.FAILED.code:
+                    await transaction.rollback();
                     await deleteUploadedFiles(allFiles);
                     return responseTemplates.setFailedResponse(
                       RESPONSE_MESSAGES.FAILED,
                     );
                   default:
+                    await transaction.rollback();
                     await deleteUploadedFiles(allFiles);
                     return responseTemplates.setInternalServerErrorResponse(
                       RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
@@ -200,6 +210,7 @@ export const service = {
                 }
                 break;
               default:
+                await transaction.rollback();
                 await deleteUploadedFiles(allFiles);
                 return responseTemplates.setInternalServerErrorResponse(
                   RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
@@ -225,11 +236,13 @@ export const service = {
                   case HTTP_STATUS.OK.code:
                     break;
                   case HTTP_STATUS.FAILED.code:
+                    await transaction.rollback();
                     await deleteUploadedFiles(allFiles);
                     return responseTemplates.setFailedResponse(
                       RESPONSE_MESSAGES.FAILED,
                     );
                   default:
+                    await transaction.rollback();
                     await deleteUploadedFiles(allFiles);
                     return responseTemplates.setInternalServerErrorResponse(
                       RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
@@ -237,11 +250,13 @@ export const service = {
                 }
                 break;
               case HTTP_STATUS.FAILED.code:
+                await transaction.rollback();
                 await deleteUploadedFiles(allFiles);
                 return responseTemplates.setFailedResponse(
                   RESPONSE_MESSAGES.FAILED,
                 );
               default:
+                await transaction.rollback();
                 await deleteUploadedFiles(allFiles);
                 return responseTemplates.setInternalServerErrorResponse(
                   RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
@@ -271,11 +286,13 @@ export const service = {
                       case HTTP_STATUS.CREATED.code:
                         break;
                       case HTTP_STATUS.FAILED.code:
+                        await transaction.rollback();
                         await deleteUploadedFiles(allFiles);
                         return responseTemplates.setFailedResponse(
                           RESPONSE_MESSAGES.FAILED,
                         );
                       default:
+                        await transaction.rollback();
                         await deleteUploadedFiles(allFiles);
                         return responseTemplates.setInternalServerErrorResponse(
                           RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
@@ -284,11 +301,13 @@ export const service = {
                   }
                   break;
                 case HTTP_STATUS.FAILED.code:
+                  await transaction.rollback();
                   await deleteUploadedFiles(allFiles);
                   return responseTemplates.setFailedResponse(
                     RESPONSE_MESSAGES.FAILED,
                   );
                 default:
+                  await transaction.rollback();
                   await deleteUploadedFiles(allFiles);
                   return responseTemplates.setInternalServerErrorResponse(
                     RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
@@ -330,6 +349,7 @@ export const service = {
               );
 
               if (createFile.code !== HTTP_STATUS.CREATED.code) {
+                await transaction.rollback();
                 await deleteUploadedFiles(allFiles);
                 return responseTemplates.setFailedResponse(
                   RESPONSE_MESSAGES.FAILED,
@@ -355,9 +375,11 @@ export const service = {
           );
           return responseTemplates.setCreatedResponse(mappedSheet);
         case HTTP_STATUS.FAILED.code:
+          await transaction.rollback();
           await deleteUploadedFiles(allFiles);
           return responseTemplates.setFailedResponse(RESPONSE_MESSAGES.FAILED);
         default:
+          await transaction.rollback();
           await deleteUploadedFiles(allFiles);
           return responseTemplates.setInternalServerErrorResponse(
             RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
@@ -416,8 +438,10 @@ export const service = {
         case HTTP_STATUS.OK.code:
           break;
         case HTTP_STATUS.FAILED.code:
+          await transaction.rollback();
           return responseTemplates.setFailedResponse(RESPONSE_MESSAGES.FAILED);
         default:
+          await transaction.rollback();
           return responseTemplates.setInternalServerErrorResponse(
             RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
           );

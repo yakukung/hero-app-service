@@ -14,7 +14,7 @@ export const Posts = sequelize.define(
     },
     sheet_id: {
       type: DataTypes.UUID,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: "sheets",
         key: "id",
@@ -80,11 +80,9 @@ export const Posts = sequelize.define(
       type: DataTypes.DATE(3),
       allowNull: true,
     },
-
   },
   {
     tableName: "posts",
     timestamps: false,
-  }
+  },
 );
-

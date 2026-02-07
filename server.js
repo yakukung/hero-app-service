@@ -7,6 +7,7 @@ import { router as authRouter } from "./src/routes/auth.routes.js";
 import { router as sheetsRouter } from "./src/routes/sheets.routes.js";
 import { router as usersRouter } from "./src/routes/users.routes.js";
 import { router as categoriesRouter } from "./src/routes/categories.routes.js";
+import { router as postsRouter } from "./src/routes/posts.routes.js";
 const app = express();
 const PORT = process.env.PORT;
 
@@ -19,6 +20,7 @@ app.use("/auth", authRouter);
 app.use("/users", usersRouter);
 app.use("/sheets", sheetsRouter);
 app.use("/categories", categoriesRouter);
+app.use("/posts", postsRouter);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
