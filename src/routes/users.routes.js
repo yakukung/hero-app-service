@@ -17,3 +17,4 @@ router.patch("/update-password", usersController.updatePassword);
 router.patch("/update-username", usersController.updateUsername);
 router.patch("/update-email", usersController.updateEmail);
 router.get("/:id", usersController.getById);
+router.get("/", usersController.getAll);

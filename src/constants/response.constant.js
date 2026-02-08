@@ -20,6 +20,12 @@ export const RESPONSE_MESSAGES = Object.freeze({
       en: "Bad request.",
     },
   },
+  DATA_ALREADY_EXIST: {
+    message: {
+      th: "ข้อมูลนี้มีอยู่แล้ว",
+      en: "Data already exist.",
+    },
+  },
 
   //================================
   // Invalid Error

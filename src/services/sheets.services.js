@@ -361,14 +361,15 @@ export const service = {
             createSheet.result.id,
             transaction,
           );
-          await transaction.commit();
-
           if (findSheet.code !== HTTP_STATUS.OK.code) {
+            await transaction.rollback();
             await deleteUploadedFiles(allFiles);
             return responseTemplates.setInternalServerErrorResponse(
               RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
             );
           }
+
+          await transaction.commit();
 
           const mappedSheet = await sheetsMapping.mapSheetDetail(
             findSheet.result,
@@ -408,8 +409,10 @@ export const service = {
         case HTTP_STATUS.CREATED.code:
           break;
         case HTTP_STATUS.FAILED.code:
+          await transaction.rollback();
           return responseTemplates.setFailedResponse(RESPONSE_MESSAGES.FAILED);
         default:
+          await transaction.rollback();
           return responseTemplates.setInternalServerErrorResponse(
             RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
           );
