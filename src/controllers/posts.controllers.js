@@ -9,9 +9,33 @@ export const controller = {
       console.log(error);
     }
   },
+  async getById(req, res) {
+    try {
+      const result = await postsService.getById(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+    }
+  },
   async create(req, res) {
     try {
       const result = await postsService.create(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  async like(req, res) {
+    try {
+      const result = await postsService.like(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  async unlike(req, res) {
+    try {
+      const result = await postsService.unlike(req, res);
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);

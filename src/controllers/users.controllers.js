@@ -1,6 +1,14 @@
 import { service as usersService } from "../services/users.services.js";
 
 export const controller = {
+  async getAll(req, res) {
+    try {
+      const result = await usersService.getAll(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+    }
+  },
   async getById(req, res) {
     try {
       const result = await usersService.getById(req, res);

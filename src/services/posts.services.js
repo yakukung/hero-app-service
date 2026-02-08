@@ -9,9 +9,60 @@ export const service = {
     const transaction = await sequelize.transaction();
     try {
       const result = await postsRepository.findAll(transaction);
+      switch (result.code) {
+        case HTTP_STATUS.OK.code:
+          break;
+        case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
+          return responseTemplates.setNotFoundResponse(
+            RESPONSE_MESSAGES.DATA_NOT_FOUND,
+          );
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
+      }
+      const mappedData = await postsMapping.mapPosts(
+        result.result.data,
+        result.result.count,
+      );
 
-      return responseTemplates.setOkResponse(result);
+      await transaction.commit();
+      return responseTemplates.setOKResponse(mappedData);
     } catch (error) {
+      await transaction.rollback();
+      console.log(error);
+      return responseTemplates.setInternalServerErrorResponse(
+        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+      );
+    }
+  },
+
+  async getById(req, res) {
+    const transaction = await sequelize.transaction();
+    try {
+      const result = await postsRepository.findById(req.params.id, transaction);
+      switch (result.code) {
+        case HTTP_STATUS.OK.code:
+          break;
+        case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
+          return responseTemplates.setNotFoundResponse(
+            RESPONSE_MESSAGES.DATA_NOT_FOUND,
+          );
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
+      }
+      const mappedData = await postsMapping.mapPost(result.result);
+
+      await transaction.commit();
+      return responseTemplates.setOKResponse(mappedData);
+    } catch (error) {
+      await transaction.rollback();
       console.log(error);
       return responseTemplates.setInternalServerErrorResponse(
         RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
@@ -55,6 +106,97 @@ export const service = {
       await transaction.commit();
       const mapData = await postsMapping.mapPost(findPost.result);
       return responseTemplates.setCreatedResponse(mapData);
+    } catch (error) {
+      await transaction.rollback();
+      console.log(error);
+      return responseTemplates.setInternalServerErrorResponse(
+        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+      );
+    }
+  },
+  async like(req, res) {
+    const transaction = await sequelize.transaction();
+    try {
+      const { id } = req.params;
+      const user_id = req.user.id;
+
+      const findPost = await postsRepository.findById(id, transaction);
+      if (findPost.code !== HTTP_STATUS.OK.code) {
+        await transaction.rollback();
+        return responseTemplates.setNotFoundResponse(
+          RESPONSE_MESSAGES.DATA_NOT_FOUND,
+        );
+      }
+
+      const findLike = await postsRepository.findLike(user_id, id, transaction);
+      if (findLike.code === HTTP_STATUS.OK.code) {
+        await transaction.rollback();
+        return responseTemplates.setConflictResponse(
+          RESPONSE_MESSAGES.DATA_ALREADY_EXIST,
+        );
+      }
+
+      const addLike = await postsRepository.addLike(
+        { post_id: id, user_id },
+        transaction,
+      );
+
+      if (addLike.code !== HTTP_STATUS.CREATED.code) {
+        await transaction.rollback();
+        return responseTemplates.setInternalServerErrorResponse(
+          RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      await transaction.commit();
+      return responseTemplates.setNoContentResponse();
+    } catch (error) {
+      await transaction.rollback();
+      console.log(error);
+      return responseTemplates.setInternalServerErrorResponse(
+        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+      );
+    }
+  },
+
+  async unlike(req, res) {
+    const transaction = await sequelize.transaction();
+    try {
+      const { id } = req.params;
+      const user_id = req.user.id;
+
+      const findPost = await postsRepository.findById(id, transaction);
+      if (findPost.code !== HTTP_STATUS.OK.code) {
+        await transaction.rollback();
+        return responseTemplates.setNotFoundResponse(
+          RESPONSE_MESSAGES.DATA_NOT_FOUND,
+        );
+      }
+
+      const findLike = await postsRepository.findLike(user_id, id, transaction);
+
+      if (findLike.code !== HTTP_STATUS.OK.code) {
+        await transaction.rollback();
+        return responseTemplates.setConflictResponse(
+          RESPONSE_MESSAGES.DATA_ALREADY_EXIST,
+        );
+      }
+
+      const removeLike = await postsRepository.removeLike(
+        user_id,
+        id,
+        transaction,
+      );
+
+      if (removeLike.code !== HTTP_STATUS.OK.code) {
+        await transaction.rollback();
+        return responseTemplates.setInternalServerErrorResponse(
+          RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      await transaction.commit();
+      return responseTemplates.setNoContentResponse();
     } catch (error) {
       await transaction.rollback();
       console.log(error);

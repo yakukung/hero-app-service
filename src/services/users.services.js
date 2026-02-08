@@ -22,6 +22,39 @@ import {
 } from "../utils/timeConverter.utils.js";
 
 export const service = {
+  async getAll(req, res) {
+    const transaction = await sequelize.transaction();
+    try {
+      const findAllUsers = await usersRepository.findAll(transaction);
+      switch (findAllUsers.code) {
+        case HTTP_STATUS.OK.code:
+          break;
+        case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
+          return responseTemplates.setNotFoundResponse(
+            RESPONSE_MESSAGES.DATA_NOT_FOUND,
+          );
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
+      }
+      await transaction.commit();
+
+      const mapData = await usersMapping.mapUsers(
+        findAllUsers.result.data,
+        findAllUsers.result.count,
+      );
+      return responseTemplates.setOKResponse(mapData);
+    } catch (error) {
+      await transaction.rollback();
+      console.error(error);
+      return responseTemplates.setInternalServerErrorResponse(
+        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+      );
+    }
+  },
   async getById(req, res) {
     const transaction = await sequelize.transaction();
     try {
