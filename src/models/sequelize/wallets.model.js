@@ -1,11 +1,10 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../../configs/sequelize.configs.js";
-import { AUTH_PROVIDER } from "../../constants/auth_provider.constants.js";
 import { v7 as uuidv7 } from "uuid";
 import { STATUS_FLAG } from "../../constants/status_flag.constants.js";
 
-export const Users = sequelize.define(
-  "users",
+export const Wallets = sequelize.define(
+  "wallets",
   {
     id: {
       type: DataTypes.UUID,
@@ -13,44 +12,24 @@ export const Users = sequelize.define(
       allowNull: false,
       defaultValue: () => uuidv7(),
     },
-    username: {
-      type: DataTypes.STRING(30),
-      allowNull: true,
-    },
-    email: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-    },
-    password: {
-      type: DataTypes.BLOB,
-      allowNull: true,
-    },
-    profile_image: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    auth_provider: {
-      type: DataTypes.ENUM,
-      values: [AUTH_PROVIDER.EMAIL_PASSWORD, AUTH_PROVIDER.GOOGLE],
-      defaultValue: AUTH_PROVIDER.EMAIL_PASSWORD,
-      allowNull: false,
-    },
-    role_id: {
+    user_id: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
-        model: "roles",
+        model: "users",
         key: "id",
       },
+      unique: true,
     },
-    point: {
-      type: DataTypes.INTEGER,
+    balance: {
+      type: DataTypes.DECIMAL(19, 2),
       allowNull: false,
-      defaultValue: 0,
+      defaultValue: 0.0,
     },
-    keyword: {
-      type: DataTypes.JSON,
-      allowNull: true,
+    currency: {
+      type: DataTypes.STRING(10),
+      allowNull: false,
+      defaultValue: "THB",
     },
     visible_flag: {
       type: DataTypes.BOOLEAN,
@@ -87,19 +66,18 @@ export const Users = sequelize.define(
     },
   },
   {
-    tableName: "users",
+    tableName: "wallets",
     timestamps: false,
     indexes: [
       {
-        name: "unique_email",
+        name: "idx_wallets_user_id",
         unique: true,
-        fields: ["email"],
+        fields: ["user_id"],
       },
     ],
     hooks: {
       beforeUpdate: (instance) => {
-        console.log("🚀 ~ beforeUpdate:", instance);
-        // instance.updated_at = new Date();
+        // console.log("🚀 ~ beforeUpdate:", instance);
       },
 
       beforeBulkUpdate: (instance) => {

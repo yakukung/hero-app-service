@@ -1,11 +1,10 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../../configs/sequelize.configs.js";
-import { AUTH_PROVIDER } from "../../constants/auth_provider.constants.js";
 import { v7 as uuidv7 } from "uuid";
 import { STATUS_FLAG } from "../../constants/status_flag.constants.js";
 
-export const Users = sequelize.define(
-  "users",
+export const UsersFollows = sequelize.define(
+  "users_follows",
   {
     id: {
       type: DataTypes.UUID,
@@ -13,44 +12,21 @@ export const Users = sequelize.define(
       allowNull: false,
       defaultValue: () => uuidv7(),
     },
-    username: {
-      type: DataTypes.STRING(30),
-      allowNull: true,
-    },
-    email: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-    },
-    password: {
-      type: DataTypes.BLOB,
-      allowNull: true,
-    },
-    profile_image: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    auth_provider: {
-      type: DataTypes.ENUM,
-      values: [AUTH_PROVIDER.EMAIL_PASSWORD, AUTH_PROVIDER.GOOGLE],
-      defaultValue: AUTH_PROVIDER.EMAIL_PASSWORD,
-      allowNull: false,
-    },
-    role_id: {
+    follower_id: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
-        model: "roles",
+        model: "users",
         key: "id",
       },
     },
-    point: {
-      type: DataTypes.INTEGER,
+    following_id: {
+      type: DataTypes.UUID,
       allowNull: false,
-      defaultValue: 0,
-    },
-    keyword: {
-      type: DataTypes.JSON,
-      allowNull: true,
+      references: {
+        model: "users",
+        key: "id",
+      },
     },
     visible_flag: {
       type: DataTypes.BOOLEAN,
@@ -87,19 +63,29 @@ export const Users = sequelize.define(
     },
   },
   {
-    tableName: "users",
+    tableName: "users_follows",
     timestamps: false,
     indexes: [
       {
-        name: "unique_email",
+        name: "unique_follower_following",
         unique: true,
-        fields: ["email"],
+        fields: ["follower_id", "following_id"],
+      },
+      {
+        name: "idx_following_id",
+        fields: ["following_id"],
       },
     ],
+    validate: {
+      checkNotSelfFollow() {
+        if (this.follower_id === this.following_id) {
+          throw new Error("follower_id and following_id must be different");
+        }
+      },
+    },
     hooks: {
       beforeUpdate: (instance) => {
-        console.log("🚀 ~ beforeUpdate:", instance);
-        // instance.updated_at = new Date();
+        // console.log("🚀 ~ beforeUpdate:", instance);
       },
 
       beforeBulkUpdate: (instance) => {

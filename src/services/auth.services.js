@@ -12,6 +12,7 @@ import { mapping as usersMapping } from "../models/mapping/users.mapping.js";
 import { STATUS_FLAG } from "../constants/status_flag.constants.js";
 import { AUTH_PROVIDER } from "../constants/auth_provider.constants.js";
 import { repository as userProvidersRepository } from "../repositories/user_providers.repositories.js";
+import { repository as walletsRepository } from "../repositories/wallets.repositories.js";
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -46,7 +47,6 @@ export const service = {
             RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
           );
       }
-
       const existingUsername = await usersRepository.findByUsername(
         username,
         transaction,
@@ -63,13 +63,11 @@ export const service = {
             RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
           );
       }
-
       if (password !== confirmPassword) {
         return responseTemplates.setFailedResponse(
           RESPONSE_MESSAGES.PASSWORD_NOT_MATCH_ERROR,
         );
       }
-
       const findRole = await rolesRepository.findByName(
         process.env.DEFAULT_ROLE,
         transaction,
@@ -86,13 +84,6 @@ export const service = {
             RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
           );
       }
-
-      if (password !== confirmPassword) {
-        return responseTemplates.setFailedResponse(
-          RESPONSE_MESSAGES.PASSWORD_NOT_MATCH_ERROR,
-        );
-      }
-
       const hashedPassword = await bcrypt.hash(password, 10);
       const createUser = await usersRepository.createUser(
         username,
@@ -102,6 +93,20 @@ export const service = {
         transaction,
       );
       switch (createUser.code) {
+        case HTTP_STATUS.CREATED.code:
+          break;
+        case HTTP_STATUS.FAILED.code:
+          return responseTemplates.setFailedResponse(RESPONSE_MESSAGES.FAILED);
+        default:
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
+      }
+      const createWallet = await walletsRepository.createWallet(
+        createUser.result.id,
+        transaction,
+      );
+      switch (createWallet.code) {
         case HTTP_STATUS.CREATED.code:
           break;
         case HTTP_STATUS.FAILED.code:
@@ -128,10 +133,9 @@ export const service = {
             RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
           );
       }
-
       await transaction.commit();
       const mapData = await usersMapping.mapUser(findUserById.result);
-      return responseTemplates.setOKResponse(mapData);
+      return responseTemplates.setCreatedResponse(mapData);
     } catch (error) {
       await transaction.rollback();
       console.error(error);
@@ -233,11 +237,43 @@ export const service = {
         );
       }
 
-      if (user.status_flag !== STATUS_FLAG.ACTIVE) {
-        await transaction.rollback();
-        return responseTemplates.setUnauthorizedResponse(
-          RESPONSE_MESSAGES.USER_NOT_ACTIVE_ERROR,
-        );
+      switch (user.status_flag) {
+        case STATUS_FLAG.PENDING:
+          await transaction.rollback();
+          return responseTemplates.setUnauthorizedResponse(
+            RESPONSE_MESSAGES.USER_ACCOUNT_PENDING_ERROR,
+          );
+        case STATUS_FLAG.INACTIVE:
+          const updateStatusUser = await usersRepository.updateStatusUser(
+            user.id,
+            transaction,
+          );
+          switch (updateStatusUser.code) {
+            case HTTP_STATUS.OK.code:
+              break;
+            case HTTP_STATUS.NOT_FOUND.code:
+              await transaction.rollback();
+              return responseTemplates.setNotFoundResponse(
+                RESPONSE_MESSAGES.DATA_NOT_FOUND,
+              );
+            default:
+              await transaction.rollback();
+              return responseTemplates.setInternalServerErrorResponse(
+                RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+              );
+          }
+        case STATUS_FLAG.SUSPENDED:
+          await transaction.rollback();
+          return responseTemplates.setUnauthorizedResponse(
+            RESPONSE_MESSAGES.USER_ACCOUNT_SUSPENDED_ERROR,
+          );
+        case STATUS_FLAG.TERMINATED:
+          await transaction.rollback();
+          return responseTemplates.setUnauthorizedResponse(
+            RESPONSE_MESSAGES.USER_ACCOUNT_TERMINATED_ERROR,
+          );
+        default:
+          break;
       }
 
       const accessToken = generateAccessToken(user.id, user.role_id);
@@ -274,6 +310,7 @@ export const service = {
             RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
           );
       }
+      await transaction.commit();
       const data = {
         result: result.result,
         accessToken: accessToken,
@@ -281,7 +318,6 @@ export const service = {
         accessTokenExpiresAt: accessTokenExpiresAt,
         refreshTokenExpiresAt: refreshTokenExpiresAt,
       };
-      await transaction.commit();
       const mapData = await usersMapping.mapUserDetail(data);
       return responseTemplates.setOKResponse(mapData);
     } catch (error) {
@@ -387,6 +423,23 @@ export const service = {
                 RESPONSE_MESSAGES.FAILED,
               );
           }
+
+          const createWallet = await walletsRepository.createWallet(
+            createUser.result.id,
+            transaction,
+          );
+          switch (createWallet.code) {
+            case HTTP_STATUS.CREATED.code:
+              break;
+            case HTTP_STATUS.FAILED.code:
+              return responseTemplates.setFailedResponse(
+                RESPONSE_MESSAGES.FAILED,
+              );
+            default:
+              return responseTemplates.setInternalServerErrorResponse(
+                RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+              );
+          }
           break;
         default:
           await transaction.rollback();
@@ -395,11 +448,43 @@ export const service = {
           );
       }
 
-      if (user.status_flag !== STATUS_FLAG.ACTIVE) {
-        await transaction.rollback();
-        return responseTemplates.setUnauthorizedResponse(
-          RESPONSE_MESSAGES.USER_NOT_ACTIVE_ERROR,
-        );
+      switch (user.status_flag) {
+        case STATUS_FLAG.PENDING:
+          await transaction.rollback();
+          return responseTemplates.setUnauthorizedResponse(
+            RESPONSE_MESSAGES.USER_ACCOUNT_PENDING_ERROR,
+          );
+        case STATUS_FLAG.INACTIVE:
+          const updateStatusUser = await usersRepository.updateStatusUser(
+            user.id,
+            transaction,
+          );
+          switch (updateStatusUser.code) {
+            case HTTP_STATUS.OK.code:
+              break;
+            case HTTP_STATUS.NOT_FOUND.code:
+              await transaction.rollback();
+              return responseTemplates.setNotFoundResponse(
+                RESPONSE_MESSAGES.DATA_NOT_FOUND,
+              );
+            default:
+              await transaction.rollback();
+              return responseTemplates.setInternalServerErrorResponse(
+                RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+              );
+          }
+        case STATUS_FLAG.SUSPENDED:
+          await transaction.rollback();
+          return responseTemplates.setUnauthorizedResponse(
+            RESPONSE_MESSAGES.USER_ACCOUNT_SUSPENDED_ERROR,
+          );
+        case STATUS_FLAG.TERMINATED:
+          await transaction.rollback();
+          return responseTemplates.setUnauthorizedResponse(
+            RESPONSE_MESSAGES.USER_ACCOUNT_TERMINATED_ERROR,
+          );
+        default:
+          break;
       }
 
       const accessToken = generateAccessToken(user.id, user.role_id);

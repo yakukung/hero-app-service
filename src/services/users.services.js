@@ -40,12 +40,12 @@ export const service = {
             RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
           );
       }
-      await transaction.commit();
-
       const mapData = await usersMapping.mapUsers(
         findAllUsers.result.data,
         findAllUsers.result.count,
       );
+      await transaction.commit();
+
       return responseTemplates.setOKResponse(mapData);
     } catch (error) {
       await transaction.rollback();
@@ -74,9 +74,8 @@ export const service = {
             RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
           );
       }
-
+      const mapData = await usersMapping.mapUserDetail(findUserById);
       await transaction.commit();
-      const mapData = await usersMapping.mapUser(findUserById.result);
       return responseTemplates.setOKResponse(mapData);
     } catch (error) {
       await transaction.rollback();
@@ -339,6 +338,105 @@ export const service = {
         transaction,
       );
 
+      switch (updateResult.code) {
+        case HTTP_STATUS.OK.code:
+          break;
+        case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
+          return responseTemplates.setNotFoundResponse(
+            RESPONSE_MESSAGES.DATA_NOT_FOUND,
+          );
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
+      }
+
+      await transaction.commit();
+      return responseTemplates.setNoContentResponse();
+    } catch (error) {
+      await transaction.rollback();
+      console.error(error);
+      return responseTemplates.setInternalServerErrorResponse(
+        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+      );
+    }
+  },
+  async updateStatusFlag(req, res) {
+    const transaction = await sequelize.transaction();
+    try {
+      const { id } = req.params;
+      const { status_flag } = req.body;
+      const findUserById = await usersRepository.findById(id, transaction);
+      switch (findUserById.code) {
+        case HTTP_STATUS.OK.code:
+          break;
+        case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
+          return responseTemplates.setNotFoundResponse(
+            RESPONSE_MESSAGES.DATA_NOT_FOUND,
+          );
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
+      }
+      const updateResult = await usersRepository.updateStatusFlag(
+        id,
+        status_flag,
+        transaction,
+      );
+      switch (updateResult.code) {
+        case HTTP_STATUS.OK.code:
+          break;
+        case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
+          return responseTemplates.setNotFoundResponse(
+            RESPONSE_MESSAGES.DATA_NOT_FOUND,
+          );
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
+      }
+      await transaction.commit();
+      return responseTemplates.setNoContentResponse();
+    } catch (error) {
+      await transaction.rollback();
+      console.error(error);
+      return responseTemplates.setInternalServerErrorResponse(
+        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+      );
+    }
+  },
+  async updateKeyword(req, res) {
+    const transaction = await sequelize.transaction();
+    try {
+      const { id } = req.params;
+      const { keyword } = req.body;
+      const findUserById = await usersRepository.findById(id, transaction);
+      switch (findUserById.code) {
+        case HTTP_STATUS.OK.code:
+          break;
+        case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
+          return responseTemplates.setNotFoundResponse(
+            RESPONSE_MESSAGES.DATA_NOT_FOUND,
+          );
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
+      }
+      const updateResult = await usersRepository.updateKeyword(
+        id,
+        keyword,
+        transaction,
+      );
       switch (updateResult.code) {
         case HTTP_STATUS.OK.code:
           break;
