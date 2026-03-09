@@ -216,6 +216,19 @@ UsersReports.belongsTo(Users, { foreignKey: "reporter_id", as: "reporter" });
 
 Users.hasMany(UsersPayments, { foreignKey: "user_id", as: "payments" });
 UsersPayments.belongsTo(Users, { foreignKey: "user_id", as: "user" });
+Sheets.hasMany(UsersPayments, {
+  foreignKey: "reference_id",
+  as: "payments",
+  constraints: false,
+  scope: {
+    reference_table: "sheets",
+  },
+});
+UsersPayments.belongsTo(Sheets, {
+  foreignKey: "reference_id",
+  as: "sheet",
+  constraints: false,
+});
 
 // Plans & subscriptions
 Users.belongsToMany(Plans, {

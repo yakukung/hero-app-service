@@ -47,6 +47,32 @@ export const service = {
     }
   },
 
+  async getByUserId(req, res) {
+    try {
+      const { user_id } = req.params;
+      const result = await sheetsRepository.findAllByAuthorId(user_id);
+      switch (result.code) {
+        case HTTP_STATUS.OK.code:
+          break;
+        case HTTP_STATUS.NOT_FOUND.code:
+          return responseTemplates.setNotFoundResponse(
+            RESPONSE_MESSAGES.DATA_NOT_FOUND,
+          );
+        default:
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
+      }
+      const mappedSheet = await sheetsMapping.mapSheetsDetail(
+        result.result.data,
+        result.result.count,
+      );
+      return responseTemplates.setOKResponse(mappedSheet);
+    } catch (error) {
+      console.log(error);
+    }
+  },
+
   async getById(req, res) {
     const transaction = await sequelize.transaction();
     try {
@@ -69,6 +95,45 @@ export const service = {
       await transaction.commit();
       const mappedSheet = await sheetsMapping.mapSheetDetail(result.result);
       return responseTemplates.setOKResponse(mappedSheet);
+    } catch (error) {
+      await transaction.rollback();
+      console.error(error);
+      return responseTemplates.setInternalServerErrorResponse(
+        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+      );
+    }
+  },
+
+  async deleteSheet(req, res) {
+    const transaction = await sequelize.transaction();
+    try {
+      const { id } = req.params;
+      const result = await sheetsRepository.softDeleteById(
+        id,
+        req.user.id,
+        transaction,
+      );
+      switch (result.code) {
+        case HTTP_STATUS.OK.code:
+          break;
+        case HTTP_STATUS.CONFLICT.code:
+          await transaction.rollback();
+          return responseTemplates.setConflictResponse(
+            RESPONSE_MESSAGES.SHEET_ALREADY_PURCHASED,
+          );
+        case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
+          return responseTemplates.setNotFoundResponse(
+            RESPONSE_MESSAGES.DATA_NOT_FOUND,
+          );
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
+      }
+      await transaction.commit();
+      return responseTemplates.setNoContentResponse();
     } catch (error) {
       await transaction.rollback();
       console.error(error);

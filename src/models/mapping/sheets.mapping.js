@@ -81,6 +81,17 @@ export const mapping = {
       const author = data.author
         ? await mapUsersResponse.mapUser(data.author)
         : null;
+      let buyers = null;
+      if (data.payments && data.payments.length > 0) {
+        const buyersMap = new Map();
+        for (const payment of data.payments) {
+          if (payment.user && !buyersMap.has(payment.user.id)) {
+            const mappedBuyer = await mapUsersResponse.mapUser(payment.user);
+            buyersMap.set(payment.user.id, mappedBuyer);
+          }
+        }
+        buyers = buyersMap.size > 0 ? Array.from(buyersMap.values()) : null;
+      }
       return {
         id: data.id,
         author_id: data.author_id,
@@ -94,6 +105,7 @@ export const mapping = {
         keywords: keywords,
         questions: questions,
         files: files,
+        buyers: buyers,
         flag: {
           visible_flag: data.visible_flag,
           status_flag: data.status_flag,
