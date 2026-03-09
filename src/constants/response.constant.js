@@ -26,6 +26,12 @@ export const RESPONSE_MESSAGES = Object.freeze({
       en: "Data already exist.",
     },
   },
+  SHEET_ALREADY_PURCHASED: {
+    message: {
+      th: "ไม่สามารถลบชีตนี้ได้ เนื่องจากมีผู้ซื้อแล้ว",
+      en: "This sheet cannot be deleted because it has already been purchased.",
+    },
+  },
 
   //================================
   // Invalid Error

@@ -7,7 +7,9 @@ import { upload } from "../middleware/upload.middleware.js";
 
 router.get("/favorites", authMiddleware, sheetsController.getFavorites);
 router.get("/", sheetsController.getAll);
+router.get("/user/:user_id", sheetsController.getByUserId);
 router.get("/:id", sheetsController.getById);
+router.delete("/:id", authMiddleware, sheetsController.deleteSheet);
 router.post(
   "/create",
   authMiddleware,

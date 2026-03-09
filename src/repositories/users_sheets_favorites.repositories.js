@@ -1,4 +1,5 @@
 import { HTTP_STATUS } from "../constants/http_status.constants.js";
+import { Op } from "sequelize";
 import { models as sequelize } from "../models/sequelize/associations.js";
 import { responseRepository } from "../utils/response.utils.js";
 
@@ -10,6 +11,12 @@ export const repository = {
           {
             model: sequelize.Sheets,
             as: "sheet",
+            required: true,
+            where: {
+              visible_flag: {
+                [Op.ne]: false,
+              },
+            },
             include: [
               {
                 model: sequelize.Keywords,

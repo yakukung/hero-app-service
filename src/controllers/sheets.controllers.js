@@ -9,9 +9,25 @@ export const controller = {
       console.log(error);
     }
   },
+  async getByUserId(req, res) {
+    try {
+      const result = await sheetsService.getByUserId(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+    }
+  },
   async getById(req, res) {
     try {
       const result = await sheetsService.getById(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  async deleteSheet(req, res) {
+    try {
+      const result = await sheetsService.deleteSheet(req, res);
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
