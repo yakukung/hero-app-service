@@ -1,4 +1,6 @@
 import { mapping as mapRoleResponse } from "./roles.mapping.js";
+// import { mapping as mapWalletResponse } from "./wallets.mapping.js";
+import { mapping as mapUsersFollowsResponse } from "./users_follows.mapping.js";
 export const mapping = {
   async mapUsers(data, count) {
     try {
@@ -45,6 +47,12 @@ export const mapping = {
     const role = data.result.roles
       ? await mapRoleResponse.mapRole(data.result.roles)
       : null;
+    const followers = await mapUsersFollowsResponse.mapUsersFollows(
+      data.result.followers,
+    );
+    const followings = await mapUsersFollowsResponse.mapUsersFollows(
+      data.result.followings,
+    );
     try {
       return {
         id: data.result.id,
@@ -54,12 +62,17 @@ export const mapping = {
         auth_provider: data.result.auth_provider,
         roles: role,
         point: data.result.point,
-        tokens: {
-          access_token: data.accessToken,
-          refresh_token: data.refreshToken,
-          access_token_expires_at: data.accessTokenExpiresAt,
-          refresh_token_expires_at: data.refreshTokenExpiresAt,
-        },
+        wallet: data.result.wallet.balance,
+        tokens: data.accessToken
+          ? {
+              access_token: data.accessToken,
+              refresh_token: data.refreshToken,
+              access_token_expires_at: data.accessTokenExpiresAt,
+              refresh_token_expires_at: data.refreshTokenExpiresAt,
+            }
+          : undefined,
+        followers: followers,
+        followings: followings,
         flag: {
           visible_flag: data.result.visible_flag,
           status_flag: data.result.status_flag,

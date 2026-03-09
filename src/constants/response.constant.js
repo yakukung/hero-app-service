@@ -72,22 +72,40 @@ export const RESPONSE_MESSAGES = Object.freeze({
       en: "password is invalid.",
     },
   },
+
   AUTHENTICATION_INVALID_ERROR: {
     message: {
       th: "ชื่อผู้ใช้ อีเมล หรือรหัสผ่านไม่ถูกต้อง",
       en: "Incorrect username, email, or password.",
     },
   },
-  USER_NOT_ACTIVE_ERROR: {
-    message: {
-      th: "บัญชีนี้ไม่สามารถใช้งานได้",
-      en: "This account cannot be used.",
-    },
-  },
+
   PASSWORD_NOT_MATCH_ERROR: {
     message: {
       th: "รหัสผ่านไม่ตรงกัน",
       en: "Password not match.",
+    },
+  },
+
+  //================================
+  // User Account Error
+  //================================
+  USER_ACCOUNT_TERMINATED_ERROR: {
+    message: {
+      th: "บัญชีนี้ถูกยกเลิกการใช้งานถาวร",
+      en: "This account has been permanently terminated.",
+    },
+  },
+  USER_ACCOUNT_SUSPENDED_ERROR: {
+    message: {
+      th: "บัญชีนี้ถูกระงับการใช้งานชั่วคราว",
+      en: "This account has been suspended.",
+    },
+  },
+  USER_ACCOUNT_PENDING_ERROR: {
+    message: {
+      th: "บัญชีนี้อยู่ระหว่างรอการยืนยัน กรุณาตรวจสอบอีเมลของคุณ",
+      en: "This account is pending. Please verify your account via the email sent to you.",
     },
   },
 

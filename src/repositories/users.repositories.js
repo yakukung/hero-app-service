@@ -1,5 +1,6 @@
-import { ValidationError } from "sequelize";
+import { ValidationError, Op } from "sequelize";
 import { HTTP_STATUS } from "../constants/http_status.constants.js";
+import { sequelize as db } from "../configs/sequelize.configs.js";
 import { models as sequelize } from "../models/sequelize/associations.js";
 import { responseRepository } from "../utils/response.utils.js";
 import { STATUS_FLAG } from "../constants/status_flag.constants.js";
@@ -9,6 +10,17 @@ export const repository = {
     try {
       const rows = await sequelize.Users.findAndCountAll({
         distinct: true,
+        include: [
+          {
+            model: sequelize.Roles,
+            as: "roles",
+            where: {
+              name: {
+                [Op.ne]: "ADMIN",
+              },
+            },
+          },
+        ],
         transaction,
       });
       if (rows.rows.length === 0) {
@@ -42,6 +54,22 @@ export const repository = {
                 as: "tokens",
               },
             ],
+          },
+          {
+            model: sequelize.Wallets,
+            as: "wallet",
+          },
+          {
+            model: sequelize.Users,
+            as: "followers",
+            attributes: ["id"],
+            through: { attributes: [] },
+          },
+          {
+            model: sequelize.Users,
+            as: "followings",
+            attributes: ["id"],
+            through: { attributes: [] },
           },
         ],
         where: { id },
@@ -273,6 +301,50 @@ export const repository = {
       const result = await sequelize.Users.update(
         {
           email,
+        },
+        { where: { id: uid }, transaction },
+      );
+
+      if (result === null) {
+        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+      }
+
+      return responseRepository.setResult(HTTP_STATUS.OK, result);
+    } catch (error) {
+      console.log(error);
+      return responseRepository.setResult(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        null,
+      );
+    }
+  },
+  async updateStatusFlag(uid, status_flag, transaction) {
+    try {
+      const result = await sequelize.Users.update(
+        {
+          status_flag,
+        },
+        { where: { id: uid }, transaction },
+      );
+
+      if (result === null) {
+        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+      }
+
+      return responseRepository.setResult(HTTP_STATUS.OK, result);
+    } catch (error) {
+      console.log(error);
+      return responseRepository.setResult(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        null,
+      );
+    }
+  },
+  async updateKeyword(uid, keyword, transaction) {
+    try {
+      const result = await sequelize.Users.update(
+        {
+          keyword,
         },
         { where: { id: uid }, transaction },
       );

@@ -24,6 +24,8 @@ import { UsersPayments } from "./users_payments.model.js";
 import { Plans } from "./plans.model.js";
 import { UsersPlans } from "./users_plans.model.js";
 import { SheetsReviews } from "./sheets_reviews.model.js";
+import { Wallets } from "./wallets.model.js";
+import { UsersFollows } from "./users_follows.model.js";
 
 // Roles & Permissions via scopes
 Roles.hasMany(Users, { foreignKey: "role_id", as: "users" });
@@ -52,6 +54,9 @@ Scopes.belongsTo(Permissions, {
 // User auth-related tables
 Users.hasMany(UserProviders, { foreignKey: "user_id", as: "providers" });
 UserProviders.belongsTo(Users, { foreignKey: "user_id", as: "user" });
+
+Users.hasOne(Wallets, { foreignKey: "user_id", as: "wallet" });
+Wallets.belongsTo(Users, { foreignKey: "user_id", as: "user" });
 
 Users.hasMany(Sessions, { foreignKey: "user_id", as: "sessions" });
 Sessions.belongsTo(Users, { foreignKey: "user_id", as: "user" });
@@ -237,6 +242,31 @@ SheetsReviews.belongsTo(Sheets, { foreignKey: "sheet_id", as: "sheet" });
 Users.hasMany(SheetsReviews, { foreignKey: "user_id", as: "reviews" });
 SheetsReviews.belongsTo(Users, { foreignKey: "user_id", as: "user" });
 
+// Users Follows
+Users.belongsToMany(Users, {
+  through: UsersFollows,
+  foreignKey: "follower_id",
+  otherKey: "following_id",
+  as: "followings",
+});
+Users.belongsToMany(Users, {
+  through: UsersFollows,
+  foreignKey: "following_id",
+  otherKey: "follower_id",
+  as: "followers",
+});
+
+Users.hasMany(UsersFollows, {
+  foreignKey: "follower_id",
+  as: "followingConnections",
+});
+Users.hasMany(UsersFollows, {
+  foreignKey: "following_id",
+  as: "followerConnections",
+});
+UsersFollows.belongsTo(Users, { foreignKey: "follower_id", as: "follower" });
+UsersFollows.belongsTo(Users, { foreignKey: "following_id", as: "following" });
+
 export const models = {
   Roles,
   Permissions,
@@ -264,4 +294,6 @@ export const models = {
   Plans,
   UsersPlans,
   SheetsReviews,
+  Wallets,
+  UsersFollows,
 };

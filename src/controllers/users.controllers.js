@@ -58,4 +58,20 @@ export const controller = {
       console.log(error);
     }
   },
+  async updateStatusFlag(req, res) {
+    try {
+      const result = await usersService.updateStatusFlag(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  async updateKeyword(req, res) {
+    try {
+      const result = await usersService.updateKeyword(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+    }
+  },
 };
