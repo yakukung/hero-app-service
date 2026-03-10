@@ -919,6 +919,26 @@
           "response": []
         },
         {
+          "name": "getComments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}:{{port}}/posts/{{postId}}/comments",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "posts",
+                "{{postId}}",
+                "comments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "comment",
           "request": {
             "method": "POST",
@@ -962,6 +982,16 @@
           "request": {
             "method": "DELETE",
             "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "url": {
               "raw": "{{host}}:{{port}}/posts/{{postId}}/comment/{{commentId}}",
               "host": [

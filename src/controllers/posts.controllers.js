@@ -41,6 +41,14 @@ export const controller = {
       console.log(error);
     }
   },
+  async getComments(req, res) {
+    try {
+      const result = await postsService.getComments(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+    }
+  },
   async comment(req, res) {
     try {
       const result = await postsService.comment(req, res);
