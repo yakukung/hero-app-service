@@ -24,7 +24,7 @@ export const repository = {
           {
             model: sequelize.PostsComments,
             as: "comments",
-            attributes: ["user_id", "content", "created_at"],
+            attributes: ["id", "post_id", "user_id", "content", "created_at"],
             include: [
               {
                 model: sequelize.Users,
@@ -36,7 +36,7 @@ export const repository = {
           {
             model: sequelize.PostsShares,
             as: "shares",
-            attributes: ["user_id", "created_at"],
+            attributes: ["id", "post_id", "user_id", "created_at"],
           },
         ],
         distinct: true,
@@ -80,7 +80,7 @@ export const repository = {
           {
             model: sequelize.PostsComments,
             as: "comments",
-            attributes: ["user_id", "content", "created_at"],
+            attributes: ["id", "post_id", "user_id", "content", "created_at"],
             include: [
               {
                 model: sequelize.Users,
@@ -92,7 +92,7 @@ export const repository = {
           {
             model: sequelize.PostsShares,
             as: "shares",
-            attributes: ["user_id", "created_at"],
+            attributes: ["id", "post_id", "user_id", "created_at"],
           },
         ],
         where: { id },
@@ -215,6 +215,37 @@ export const repository = {
       );
     }
   },
+  async findCommentsByPostId(postId, transaction) {
+    try {
+      const rows = await sequelize.PostsComments.findAndCountAll({
+        where: { post_id: postId },
+        include: [
+          {
+            model: sequelize.Users,
+            as: "user",
+            attributes: ["id", "username", "profile_image"],
+          },
+        ],
+        order: [["created_at", "DESC"]],
+        transaction,
+      });
+
+      if (rows.count === 0) {
+        return responseRepository.setResult(HTTP_STATUS.NOT_FOUND, null);
+      }
+
+      return responseRepository.setResult(HTTP_STATUS.OK, {
+        count: rows.count,
+        data: rows.rows,
+      });
+    } catch (error) {
+      console.error(error);
+      return responseRepository.setResult(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        null,
+      );
+    }
+  },
   async addComment(data, transaction) {
     try {
       const result = await sequelize.PostsComments.create(data, {
@@ -234,9 +265,21 @@ export const repository = {
         return responseRepository.setResult(HTTP_STATUS.FAILED, null);
       }
 
+      const withUser = await sequelize.PostsComments.findOne({
+        where: { id: result.dataValues.id },
+        include: [
+          {
+            model: sequelize.Users,
+            as: "user",
+            attributes: ["id", "username", "profile_image"],
+          },
+        ],
+        transaction,
+      });
+
       return responseRepository.setResult(
         HTTP_STATUS.CREATED,
-        result.dataValues,
+        withUser ? withUser.dataValues : result.dataValues,
       );
     } catch (error) {
       console.error(error);
@@ -267,6 +310,26 @@ export const repository = {
       }
 
       return responseRepository.setResult(HTTP_STATUS.OK, null);
+    } catch (error) {
+      console.error(error);
+      return responseRepository.setResult(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        null,
+      );
+    }
+  },
+  async findShare(userId, postId, transaction) {
+    try {
+      const result = await sequelize.PostsShares.findOne({
+        where: { user_id: userId, post_id: postId },
+        transaction,
+      });
+
+      if (result === null) {
+        return responseRepository.setResult(HTTP_STATUS.NOT_FOUND, null);
+      }
+
+      return responseRepository.setResult(HTTP_STATUS.OK, result);
     } catch (error) {
       console.error(error);
       return responseRepository.setResult(

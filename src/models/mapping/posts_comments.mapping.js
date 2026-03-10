@@ -1,3 +1,5 @@
+import { mapping as mapUserResponse } from "./users.mapping.js";
+
 export const mapping = {
   async mapPostsComments(data, count) {
     try {
@@ -16,15 +18,14 @@ export const mapping = {
     }
   },
   async mapPostComment(data) {
+    const rawUser =
+      data.user && data.user.dataValues ? data.user.dataValues : data.user;
+    const user = rawUser ? await mapUserResponse.mapUser(rawUser) : null;
     return {
+      id: data.id,
+      post_id: data.post_id,
       user_id: data.user_id,
-      user: data.user
-        ? {
-            id: data.user.id,
-            username: data.user.username,
-            profile_image: data.user.profile_image,
-          }
-        : null,
+      user: user,
       content: data.content,
       created_at: data.created_at,
     };

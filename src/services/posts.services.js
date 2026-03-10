@@ -4,6 +4,8 @@ import { RESPONSE_MESSAGES } from "../constants/response.constant.js";
 import { HTTP_STATUS } from "../constants/http_status.constants.js";
 import { responseTemplates } from "../utils/response.utils.js";
 import { mapping as postsMapping } from "../models/mapping/posts.mapping.js";
+import { mapping as postsCommentsMapping } from "../models/mapping/posts_comments.mapping.js";
+import { mapping as postsSharesMapping } from "../models/mapping/posts_shares.mapping.js";
 export const service = {
   async getAll(req, res) {
     const transaction = await sequelize.transaction();
@@ -205,6 +207,44 @@ export const service = {
       );
     }
   },
+  async getComments(req, res) {
+    const transaction = await sequelize.transaction();
+    try {
+      const { id } = req.params;
+      const result = await postsRepository.findCommentsByPostId(
+        id,
+        transaction,
+      );
+      switch (result.code) {
+        case HTTP_STATUS.OK.code:
+          break;
+        case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
+          return responseTemplates.setNotFoundResponse(
+            RESPONSE_MESSAGES.DATA_NOT_FOUND,
+          );
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
+      }
+
+      const mappedData = await postsCommentsMapping.mapPostsComments(
+        result.result.data,
+        result.result.count,
+      );
+
+      await transaction.commit();
+      return responseTemplates.setOKResponse(mappedData);
+    } catch (error) {
+      await transaction.rollback();
+      console.log(error);
+      return responseTemplates.setInternalServerErrorResponse(
+        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+      );
+    }
+  },
   async comment(req, res) {
     const transaction = await sequelize.transaction();
     try {
@@ -238,8 +278,12 @@ export const service = {
           );
       }
 
+      const mappedComment = await postsCommentsMapping.mapPostComment(
+        addComment.result,
+      );
+
       await transaction.commit();
-      return responseTemplates.setCreatedResponse(addComment.result);
+      return responseTemplates.setCreatedResponse(mappedComment);
     } catch (error) {
       await transaction.rollback();
       console.log(error);
@@ -252,8 +296,6 @@ export const service = {
     const transaction = await sequelize.transaction();
     try {
       const { id, commentId } = req.params;
-      console.log("🚀 ~ commentId:", commentId);
-      console.log("🚀 ~ id:", id);
 
       const findPost = await postsRepository.findById(id, transaction);
       if (findPost.code !== HTTP_STATUS.OK.code) {
@@ -311,6 +353,18 @@ export const service = {
         );
       }
 
+      const findShare = await postsRepository.findShare(
+        user_id,
+        id,
+        transaction,
+      );
+      if (findShare.code === HTTP_STATUS.OK.code) {
+        await transaction.rollback();
+        return responseTemplates.setConflictResponse(
+          RESPONSE_MESSAGES.DATA_ALREADY_EXIST,
+        );
+      }
+
       const addShare = await postsRepository.addShare(
         { post_id: id, user_id },
         transaction,
@@ -329,8 +383,12 @@ export const service = {
           );
       }
 
+      const mappedShare = await postsSharesMapping.mapPostShare(
+        addShare.result,
+      );
+
       await transaction.commit();
-      return responseTemplates.setCreatedResponse(addShare.result);
+      return responseTemplates.setCreatedResponse(mappedShare);
     } catch (error) {
       await transaction.rollback();
       console.log(error);
