@@ -74,4 +74,20 @@ export const controller = {
       console.log(error);
     }
   },
+  async follow(req, res) {
+    try {
+      const result = await usersService.follow(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  async unfollow(req, res) {
+    try {
+      const result = await usersService.unfollow(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+    }
+  },
 };

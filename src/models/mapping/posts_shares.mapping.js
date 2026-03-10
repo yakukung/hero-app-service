@@ -18,7 +18,6 @@ export const mapping = {
   async mapPostShare(data) {
     return {
       user_id: data.user_id,
-      content: data.content,
       created_at: data.created_at,
     };
   },

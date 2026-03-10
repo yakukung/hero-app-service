@@ -205,4 +205,138 @@ export const service = {
       );
     }
   },
+  async comment(req, res) {
+    const transaction = await sequelize.transaction();
+    try {
+      const { id } = req.params;
+      const { content } = req.body;
+      const user_id = req.user.id;
+
+      const findPost = await postsRepository.findById(id, transaction);
+      if (findPost.code !== HTTP_STATUS.OK.code) {
+        await transaction.rollback();
+        return responseTemplates.setNotFoundResponse(
+          RESPONSE_MESSAGES.DATA_NOT_FOUND,
+        );
+      }
+
+      const addComment = await postsRepository.addComment(
+        { post_id: id, user_id, content },
+        transaction,
+      );
+
+      switch (addComment.code) {
+        case HTTP_STATUS.CREATED.code:
+          break;
+        case HTTP_STATUS.FAILED.code:
+          await transaction.rollback();
+          return responseTemplates.setFailedResponse(RESPONSE_MESSAGES.FAILED);
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
+      }
+
+      await transaction.commit();
+      return responseTemplates.setCreatedResponse(addComment.result);
+    } catch (error) {
+      await transaction.rollback();
+      console.log(error);
+      return responseTemplates.setInternalServerErrorResponse(
+        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+      );
+    }
+  },
+  async deleteComment(req, res) {
+    const transaction = await sequelize.transaction();
+    try {
+      const { id, commentId } = req.params;
+      console.log("🚀 ~ commentId:", commentId);
+      console.log("🚀 ~ id:", id);
+
+      const findPost = await postsRepository.findById(id, transaction);
+      if (findPost.code !== HTTP_STATUS.OK.code) {
+        await transaction.rollback();
+        return responseTemplates.setNotFoundResponse(
+          RESPONSE_MESSAGES.DATA_NOT_FOUND,
+        );
+      }
+
+      const removeComment = await postsRepository.removeComment(
+        commentId,
+        id,
+        transaction,
+      );
+
+      switch (removeComment.code) {
+        case HTTP_STATUS.OK.code:
+          break;
+        case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
+          return responseTemplates.setNotFoundResponse(
+            RESPONSE_MESSAGES.DATA_NOT_FOUND,
+          );
+        case HTTP_STATUS.FAILED.code:
+          await transaction.rollback();
+          return responseTemplates.setFailedResponse(RESPONSE_MESSAGES.FAILED);
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
+      }
+
+      await transaction.commit();
+      return responseTemplates.setNoContentResponse();
+    } catch (error) {
+      await transaction.rollback();
+      console.log(error);
+      return responseTemplates.setInternalServerErrorResponse(
+        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+      );
+    }
+  },
+  async share(req, res) {
+    const transaction = await sequelize.transaction();
+    try {
+      const { id } = req.params;
+      const user_id = req.user.id;
+
+      const findPost = await postsRepository.findById(id, transaction);
+      if (findPost.code !== HTTP_STATUS.OK.code) {
+        await transaction.rollback();
+        return responseTemplates.setNotFoundResponse(
+          RESPONSE_MESSAGES.DATA_NOT_FOUND,
+        );
+      }
+
+      const addShare = await postsRepository.addShare(
+        { post_id: id, user_id },
+        transaction,
+      );
+
+      switch (addShare.code) {
+        case HTTP_STATUS.CREATED.code:
+          break;
+        case HTTP_STATUS.FAILED.code:
+          await transaction.rollback();
+          return responseTemplates.setFailedResponse(RESPONSE_MESSAGES.FAILED);
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
+      }
+
+      await transaction.commit();
+      return responseTemplates.setCreatedResponse(addShare.result);
+    } catch (error) {
+      await transaction.rollback();
+      console.log(error);
+      return responseTemplates.setInternalServerErrorResponse(
+        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+      );
+    }
+  },
 };

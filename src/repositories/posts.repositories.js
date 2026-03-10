@@ -25,11 +25,18 @@ export const repository = {
             model: sequelize.PostsComments,
             as: "comments",
             attributes: ["user_id", "content", "created_at"],
+            include: [
+              {
+                model: sequelize.Users,
+                as: "user",
+                attributes: ["id", "username", "profile_image"],
+              },
+            ],
           },
           {
             model: sequelize.PostsShares,
             as: "shares",
-            attributes: ["user_id"],
+            attributes: ["user_id", "created_at"],
           },
         ],
         distinct: true,
@@ -64,6 +71,28 @@ export const repository = {
           {
             model: sequelize.Sheets,
             as: "sheet",
+          },
+          {
+            model: sequelize.PostsLikes,
+            as: "likes",
+            attributes: ["user_id"],
+          },
+          {
+            model: sequelize.PostsComments,
+            as: "comments",
+            attributes: ["user_id", "content", "created_at"],
+            include: [
+              {
+                model: sequelize.Users,
+                as: "user",
+                attributes: ["id", "username", "profile_image"],
+              },
+            ],
+          },
+          {
+            model: sequelize.PostsShares,
+            as: "shares",
+            attributes: ["user_id", "created_at"],
           },
         ],
         where: { id },
@@ -178,6 +207,97 @@ export const repository = {
       }
 
       return responseRepository.setResult(HTTP_STATUS.OK, null);
+    } catch (error) {
+      console.error(error);
+      return responseRepository.setResult(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        null,
+      );
+    }
+  },
+  async addComment(data, transaction) {
+    try {
+      const result = await sequelize.PostsComments.create(data, {
+        transaction,
+      });
+
+      if (!result) {
+        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+      }
+
+      const updatePost = await sequelize.Posts.update(
+        { comment_count: Sequelize.literal("comment_count + 1") },
+        { where: { id: data.post_id }, transaction },
+      );
+
+      if (!updatePost) {
+        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+      }
+
+      return responseRepository.setResult(
+        HTTP_STATUS.CREATED,
+        result.dataValues,
+      );
+    } catch (error) {
+      console.error(error);
+      return responseRepository.setResult(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        null,
+      );
+    }
+  },
+  async removeComment(commentId, postId, transaction) {
+    try {
+      const result = await sequelize.PostsComments.destroy({
+        where: { id: commentId, post_id: postId },
+        transaction,
+      });
+
+      if (result === 0) {
+        return responseRepository.setResult(HTTP_STATUS.NOT_FOUND, null);
+      }
+
+      const updatePost = await sequelize.Posts.update(
+        { comment_count: Sequelize.literal("comment_count - 1") },
+        { where: { id: postId }, transaction },
+      );
+
+      if (!updatePost) {
+        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+      }
+
+      return responseRepository.setResult(HTTP_STATUS.OK, null);
+    } catch (error) {
+      console.error(error);
+      return responseRepository.setResult(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        null,
+      );
+    }
+  },
+  async addShare(data, transaction) {
+    try {
+      const result = await sequelize.PostsShares.create(data, {
+        transaction,
+      });
+
+      if (!result) {
+        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+      }
+
+      const updatePost = await sequelize.Posts.update(
+        { share_count: Sequelize.literal("share_count + 1") },
+        { where: { id: data.post_id }, transaction },
+      );
+
+      if (!updatePost) {
+        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+      }
+
+      return responseRepository.setResult(
+        HTTP_STATUS.CREATED,
+        result.dataValues,
+      );
     } catch (error) {
       console.error(error);
       return responseRepository.setResult(
