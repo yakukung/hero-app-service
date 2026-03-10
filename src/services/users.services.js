@@ -5,6 +5,7 @@ import { repository as usersRepository } from "../repositories/users.repositorie
 import { repository as rolesRepository } from "../repositories/roles.repositories.js";
 import { repository as sessionsRepository } from "../repositories/sessions.repositories.js";
 import { repository as tokensRepository } from "../repositories/tokens.repositories.js";
+import { repository as usersFollowsRepository } from "../repositories/users_follows.repositories.js";
 import { RESPONSE_MESSAGES } from "../constants/response.constant.js";
 import { HTTP_STATUS } from "../constants/http_status.constants.js";
 import { responseTemplates } from "../utils/response.utils.js";
@@ -445,6 +446,162 @@ export const service = {
           return responseTemplates.setNotFoundResponse(
             RESPONSE_MESSAGES.DATA_NOT_FOUND,
           );
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
+      }
+
+      await transaction.commit();
+      return responseTemplates.setNoContentResponse();
+    } catch (error) {
+      await transaction.rollback();
+      console.error(error);
+      return responseTemplates.setInternalServerErrorResponse(
+        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+      );
+    }
+  },
+  async follow(req, res) {
+    const transaction = await sequelize.transaction();
+    try {
+      const { id } = req.params;
+      const follower_id = req.user.id;
+
+      if (follower_id === id) {
+        await transaction.rollback();
+        return responseTemplates.setFailedResponse(RESPONSE_MESSAGES.FAILED);
+      }
+
+      const findUserById = await usersRepository.findById(id, transaction);
+      switch (findUserById.code) {
+        case HTTP_STATUS.OK.code:
+          break;
+        case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
+          return responseTemplates.setNotFoundResponse(
+            RESPONSE_MESSAGES.DATA_NOT_FOUND,
+          );
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
+      }
+
+      const findFollow = await usersFollowsRepository.findFollow(
+        follower_id,
+        id,
+        transaction,
+      );
+      if (findFollow.code === HTTP_STATUS.OK.code) {
+        await transaction.rollback();
+        return responseTemplates.setConflictResponse(
+          RESPONSE_MESSAGES.DATA_ALREADY_EXIST,
+        );
+      }
+      if (findFollow.code !== HTTP_STATUS.NOT_FOUND.code) {
+        await transaction.rollback();
+        return responseTemplates.setInternalServerErrorResponse(
+          RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      const addFollow = await usersFollowsRepository.create(
+        follower_id,
+        id,
+        transaction,
+      );
+      switch (addFollow.code) {
+        case HTTP_STATUS.CREATED.code:
+          break;
+        case HTTP_STATUS.CONFLICT.code:
+          await transaction.rollback();
+          return responseTemplates.setConflictResponse(
+            RESPONSE_MESSAGES.DATA_ALREADY_EXIST,
+          );
+        case HTTP_STATUS.FAILED.code:
+          await transaction.rollback();
+          return responseTemplates.setFailedResponse(RESPONSE_MESSAGES.FAILED);
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
+      }
+
+      await transaction.commit();
+      return responseTemplates.setNoContentResponse();
+    } catch (error) {
+      await transaction.rollback();
+      console.error(error);
+      return responseTemplates.setInternalServerErrorResponse(
+        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+      );
+    }
+  },
+  async unfollow(req, res) {
+    const transaction = await sequelize.transaction();
+    try {
+      const { id } = req.params;
+      const follower_id = req.user.id;
+
+      if (follower_id === id) {
+        await transaction.rollback();
+        return responseTemplates.setFailedResponse(RESPONSE_MESSAGES.FAILED);
+      }
+
+      const findUserById = await usersRepository.findById(id, transaction);
+      switch (findUserById.code) {
+        case HTTP_STATUS.OK.code:
+          break;
+        case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
+          return responseTemplates.setNotFoundResponse(
+            RESPONSE_MESSAGES.DATA_NOT_FOUND,
+          );
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
+      }
+
+      const findFollow = await usersFollowsRepository.findFollow(
+        follower_id,
+        id,
+        transaction,
+      );
+      if (findFollow.code === HTTP_STATUS.NOT_FOUND.code) {
+        await transaction.rollback();
+        return responseTemplates.setNotFoundResponse(
+          RESPONSE_MESSAGES.DATA_NOT_FOUND,
+        );
+      }
+      if (findFollow.code !== HTTP_STATUS.OK.code) {
+        await transaction.rollback();
+        return responseTemplates.setInternalServerErrorResponse(
+          RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      const removeFollow = await usersFollowsRepository.delete(
+        follower_id,
+        id,
+        transaction,
+      );
+      switch (removeFollow.code) {
+        case HTTP_STATUS.OK.code:
+          break;
+        case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
+          return responseTemplates.setNotFoundResponse(
+            RESPONSE_MESSAGES.DATA_NOT_FOUND,
+          );
+        case HTTP_STATUS.FAILED.code:
+          await transaction.rollback();
+          return responseTemplates.setFailedResponse(RESPONSE_MESSAGES.FAILED);
         default:
           await transaction.rollback();
           return responseTemplates.setInternalServerErrorResponse(

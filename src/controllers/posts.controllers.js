@@ -41,4 +41,28 @@ export const controller = {
       console.log(error);
     }
   },
+  async comment(req, res) {
+    try {
+      const result = await postsService.comment(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  async deleteComment(req, res) {
+    try {
+      const result = await postsService.deleteComment(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  async share(req, res) {
+    try {
+      const result = await postsService.share(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+    }
+  },
 };

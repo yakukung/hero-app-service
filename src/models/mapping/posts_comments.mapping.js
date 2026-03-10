@@ -18,6 +18,13 @@ export const mapping = {
   async mapPostComment(data) {
     return {
       user_id: data.user_id,
+      user: data.user
+        ? {
+            id: data.user.id,
+            username: data.user.username,
+            profile_image: data.user.profile_image,
+          }
+        : null,
       content: data.content,
       created_at: data.created_at,
     };
