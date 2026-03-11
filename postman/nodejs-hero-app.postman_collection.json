@@ -23,6 +23,10 @@
       "value": ""
     },
     {
+      "key": "resetToken",
+      "value": ""
+    },
+    {
       "key": "userId",
       "value": "00000000-0000-0000-0000-000000000001"
     },
@@ -154,6 +158,87 @@
               "path": [
                 "auth",
                 "loginByGoogle"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "forgotPassword",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"demo@example.com\",\n  \"base_url\": \"{{host}}:{{port}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}:{{port}}/auth/forgot-password",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "auth",
+                "forgot-password"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "resetPassword",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{resetToken}}\",\n  \"new_password\": \"new-password\",\n  \"confirmPassword\": \"new-password\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}:{{port}}/auth/reset-password",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "auth",
+                "reset-password"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "resetPasswordPage",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}:{{port}}/auth/reset-password?token={{resetToken}}",
+              "host": [
+                "{{host}}"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "auth",
+                "reset-password"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "{{resetToken}}"
+                }
               ]
             }
           },

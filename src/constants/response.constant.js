@@ -66,6 +66,12 @@ export const RESPONSE_MESSAGES = Object.freeze({
       en: "token is invalid.",
     },
   },
+  RESET_LINK_USED_ERROR: {
+    message: {
+      th: "ลิงก์รีเซ็ตรหัสผ่านนี้ถูกใช้งานแล้ว",
+      en: "Reset link has already been used.",
+    },
+  },
   OLD_PASSWORD_INVALID_ERROR: {
     message: {
       th: "รหัสผ่านเดิมไม่ถูกต้อง",

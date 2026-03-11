@@ -3,6 +3,7 @@ import { service as authService } from "../services/auth.services.js";
 import {
   getVerificationSuccessTemplate,
   getVerificationErrorTemplate,
+  getResetPasswordTemplate,
 } from "../utils/templates.utils.js";
 
 export const controller = {
@@ -50,6 +51,31 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+    }
+  },
+  async forgotPassword(req, res) {
+    try {
+      const result = await authService.forgotPassword(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  async resetPassword(req, res) {
+    try {
+      const result = await authService.resetPassword(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  async resetPasswordPage(req, res) {
+    try {
+      const token = req.query.token || "";
+      return res.send(getResetPasswordTemplate(token));
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(getResetPasswordTemplate(""));
     }
   },
 };
