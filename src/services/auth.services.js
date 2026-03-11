@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import crypto from "crypto";
+import jwt from "jsonwebtoken";
 import { sequelize } from "../configs/sequelize.configs.js";
 import { repository as usersRepository } from "../repositories/users.repositories.js";
 import { repository as rolesRepository } from "../repositories/roles.repositories.js";
@@ -23,7 +24,7 @@ import {
   accessTokenExpireMs,
   refreshTokenExpireMs,
 } from "../utils/timeConverter.utils.js";
-import { sendVerificationEmail } from "../utils/mail.utils.js";
+import { sendResetPasswordEmail, sendVerificationEmail } from "../utils/mail.utils.js";
 
 export const service = {
   async register(req, res) {
@@ -523,6 +524,166 @@ export const service = {
       return responseTemplates.setOKResponse(mapData);
     } catch (error) {
       await transaction.rollback();
+      return responseTemplates.setInternalServerErrorResponse(
+        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+      );
+    }
+  },
+  async forgotPassword(req, res) {
+    const transaction = await sequelize.transaction();
+    try {
+      const { email, base_url } = req.body;
+      const findUser = await usersRepository.findByEmail(email, transaction);
+      switch (findUser.code) {
+        case HTTP_STATUS.OK.code:
+          break;
+        case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
+          return responseTemplates.setNotFoundResponse(
+            RESPONSE_MESSAGES.DATA_NOT_FOUND,
+          );
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
+      }
+
+      const resetSecret =
+        process.env.JWT_SECRET_RESET_PASSWORD ||
+        process.env.JWT_SECRET_ACCESS_TOKEN;
+      const resetExpiresIn =
+        process.env.JWT_EXPIRE_RESET_PASSWORD || "15m";
+
+      const resetToken = jwt.sign(
+        {
+          type: "reset_password",
+          sub: findUser.result.id,
+        },
+        resetSecret,
+        {
+          algorithm: process.env.JWT_ALGORITHM,
+          expiresIn: resetExpiresIn,
+        },
+      );
+
+      const baseUrl =
+        base_url || process.env.FRONTEND_URL || process.env.BASE_URL;
+      const resetLink = `${baseUrl}/auth/reset-password?token=${encodeURIComponent(
+        resetToken,
+      )}`;
+
+      await sendResetPasswordEmail(email, resetLink);
+
+      await transaction.commit();
+      return responseTemplates.setOKResponse({
+        message: RESPONSE_MESSAGES.SUCCESS.message,
+      });
+    } catch (error) {
+      await transaction.rollback();
+      console.error(error);
+      return responseTemplates.setInternalServerErrorResponse(
+        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+      );
+    }
+  },
+  async resetPassword(req, res) {
+    const transaction = await sequelize.transaction();
+    try {
+      const { token, new_password, confirmPassword } = req.body;
+
+      if (!token || !new_password) {
+        await transaction.rollback();
+        return responseTemplates.setFailedResponse(RESPONSE_MESSAGES.FAILED);
+      }
+
+      if (confirmPassword && new_password !== confirmPassword) {
+        await transaction.rollback();
+        return responseTemplates.setFailedResponse(
+          RESPONSE_MESSAGES.PASSWORD_NOT_MATCH_ERROR,
+        );
+      }
+
+      const resetSecret =
+        process.env.JWT_SECRET_RESET_PASSWORD ||
+        process.env.JWT_SECRET_ACCESS_TOKEN;
+
+      let decoded;
+      try {
+        decoded = jwt.verify(token, resetSecret);
+      } catch (error) {
+        await transaction.rollback();
+        return responseTemplates.setUnauthorizedResponse(
+          RESPONSE_MESSAGES.TOKEN_INVALID_INVALID_ERROR,
+        );
+      }
+
+      if (!decoded?.sub || decoded?.type !== "reset_password") {
+        await transaction.rollback();
+        return responseTemplates.setUnauthorizedResponse(
+          RESPONSE_MESSAGES.TOKEN_INVALID_INVALID_ERROR,
+        );
+      }
+
+      const findUser = await usersRepository.findById(
+        decoded.sub,
+        transaction,
+      );
+      switch (findUser.code) {
+        case HTTP_STATUS.OK.code:
+          break;
+        case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
+          return responseTemplates.setNotFoundResponse(
+            RESPONSE_MESSAGES.DATA_NOT_FOUND,
+          );
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
+      }
+
+      const userUpdatedAt = findUser.result.updated_at
+        ? new Date(findUser.result.updated_at)
+        : null;
+      if (
+        userUpdatedAt &&
+        Math.floor(userUpdatedAt.getTime() / 1000) >= decoded.iat
+      ) {
+        await transaction.rollback();
+        return responseTemplates.setUnauthorizedResponse(
+          RESPONSE_MESSAGES.RESET_LINK_USED_ERROR,
+        );
+      }
+
+      const hashedPassword = await bcrypt.hash(new_password, 10);
+      const updateResult = await usersRepository.updatePassword(
+        decoded.sub,
+        hashedPassword,
+        transaction,
+      );
+
+      switch (updateResult.code) {
+        case HTTP_STATUS.OK.code:
+          break;
+        case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
+          return responseTemplates.setNotFoundResponse(
+            RESPONSE_MESSAGES.DATA_NOT_FOUND,
+          );
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
+      }
+
+      await transaction.commit();
+      return responseTemplates.setNoContentResponse();
+    } catch (error) {
+      await transaction.rollback();
+      console.error(error);
       return responseTemplates.setInternalServerErrorResponse(
         RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
       );
