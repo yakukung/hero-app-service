@@ -558,7 +558,6 @@ CREATE TABLE `users_payments` (
   `reference_table` VARCHAR(100) NOT NULL COMMENT 'เก็บชื่อตารางของสิ่งที่ชำระเงิน',
   `payment_method` ENUM('PROMPTPAY') NOT NULL COMMENT 'เก็บช่องทางการชำระเงิน (ตอนนี้เก็บแค่พร้อมเพย์เท่านั้น)',
   `amount` DECIMAL(10,2) NOT NULL COMMENT 'เก็บจำนวนเงินที่ชำระ',
-  `currency` VARCHAR(10) NOT NULL DEFAULT 'THB' COMMENT 'เก็บสกุลเงิน (เช่น THB)',
   `payment_status` ENUM('PENDING', 'SUCCESSFUL', 'FAILED', 'REFUNDED') NOT NULL DEFAULT 'PENDING' COMMENT 'เก็บสถานะการชำระเงินจาก Gateway',
   `slip_image_url` TEXT DEFAULT NULL COMMENT 'เก็บ URL ของหลักฐานการชำระเงิน',
   `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
