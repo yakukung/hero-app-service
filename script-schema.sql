@@ -154,7 +154,8 @@ CREATE TABLE `users` (
   `status_modified_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขสถานะล่าสุด',
   `role_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id กลุ่มผู้ใช้งานที่อ้างถึง',
   `point` INTEGER DEFAULT 0 NOT NULL COMMENT 'เก็บคะแนนของผู้ใช้',
-  `keyword` json NULL COMMENT 'เก็บ keyword ของผู้ใข้',
+  `keyword` json NULL COMMENT 'เก็บ keyword ของผู้ใช้',
+  `total_wallet` DECIMAL(19, 2) NOT NULL DEFAULT 0.00 COMMENT 'เก็บ wallet ของผู้ใช้',
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_email` (`email`),
   CONSTRAINT `fk_users_role_id`
@@ -583,7 +584,6 @@ CREATE TABLE `plans` (
   `name` VARCHAR(150) NOT NULL COMMENT 'เก็บชื่อแพ็กเกจ (เช่น Pro รายเดือน)',
   `description` TEXT DEFAULT NULL COMMENT 'เก็บคำอธิบายแพ็กเกจ',
   `price` DECIMAL(10,2) NOT NULL COMMENT 'เก็บราคาของแพ็กเกจ',
-  `currency` VARCHAR(10) NOT NULL DEFAULT 'THB' COMMENT 'เก็บสกุลเงิน',
   `billing_interval` ENUM('DAY','WEEK','MONTH','YEAR') NOT NULL COMMENT 'เก็บหน่วยของรอบการเก็บเงิน (เช่น เดือน)',
   `billing_interval_count` INT NOT NULL DEFAULT 1 COMMENT 'เก็บจำนวนของหน่วย (เช่น 1 เดือน, 3 เดือน)',
   `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
@@ -623,10 +623,8 @@ CREATE TABLE `users_plans` (
   DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูลการสมัครสมาชิกของผู้ใช้';
 
 CREATE TABLE `wallets` (
-  `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ของ wallet',
-  `user_id` CHAR(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT 'เก็บ id ผู้ใช้ที่อ้างถึงในตาราง users',
-  `balance` DECIMAL(19, 2) NOT NULL DEFAULT 0.00 COMMENT 'เก็บยอดเงินคงเหลือ',
-  `currency` VARCHAR(10) NOT NULL DEFAULT 'THB' COMMENT 'เก็บสกุลเงิน',
+  `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ของรายการเติมเงิน',
+  `amount` DECIMAL(19, 2) NOT NULL DEFAULT 0.00 COMMENT 'เก็บจำนวนเงินที่ต้องการเติม',
   `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
   `status_flag` ENUM('ACTIVE','INACTIVE','SUSPENDED','TERMINATED') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
   `created_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่สร้างข้อมูล',
@@ -634,11 +632,8 @@ CREATE TABLE `wallets` (
   `updated_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขล่าสุด',
   `updated_by` VARCHAR(255) NULL COMMENT 'เก็บ id ผู้แก้ไขข้อมูลล่าสุด',
   `status_modified_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขสถานะล่าสุด',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `idx_wallets_user_id` (`user_id`),
-  CONSTRAINT `fk_wallets_user_id`
-    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูล Wallet ของผู้ใช้';
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูลรายการเติมเงิน';
 
 CREATE TABLE `users_follows` (
   `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ของการติดตาม',
