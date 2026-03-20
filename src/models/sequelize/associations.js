@@ -24,7 +24,6 @@ import { UsersPayments } from "./users_payments.model.js";
 import { Plans } from "./plans.model.js";
 import { UsersPlans } from "./users_plans.model.js";
 import { SheetsReviews } from "./sheets_reviews.model.js";
-import { Wallets } from "./wallets.model.js";
 import { UsersFollows } from "./users_follows.model.js";
 
 // Roles & Permissions via scopes
@@ -54,9 +53,6 @@ Scopes.belongsTo(Permissions, {
 // User auth-related tables
 Users.hasMany(UserProviders, { foreignKey: "user_id", as: "providers" });
 UserProviders.belongsTo(Users, { foreignKey: "user_id", as: "user" });
-
-Users.hasOne(Wallets, { foreignKey: "user_id", as: "wallet" });
-Wallets.belongsTo(Users, { foreignKey: "user_id", as: "user" });
 
 Users.hasMany(Sessions, { foreignKey: "user_id", as: "sessions" });
 Sessions.belongsTo(Users, { foreignKey: "user_id", as: "user" });
@@ -307,6 +303,5 @@ export const models = {
   Plans,
   UsersPlans,
   SheetsReviews,
-  Wallets,
   UsersFollows,
 };

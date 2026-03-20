@@ -1,6 +1,5 @@
-import { ValidationError, Op } from "sequelize";
+import { Op } from "sequelize";
 import { HTTP_STATUS } from "../constants/http_status.constants.js";
-import { sequelize as db } from "../configs/sequelize.configs.js";
 import { models as sequelize } from "../models/sequelize/associations.js";
 import { responseRepository } from "../utils/response.utils.js";
 import { STATUS_FLAG } from "../constants/status_flag.constants.js";
@@ -34,7 +33,10 @@ export const repository = {
       return responseRepository.setResult(HTTP_STATUS.OK, result);
     } catch (error) {
       console.log(error);
-      return responseRepository.setResult(HTTP_STATUS.SERVER_ERROR, null);
+      return responseRepository.setResult(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        null,
+      );
     }
   },
   async findById(id, transaction) {
@@ -54,10 +56,6 @@ export const repository = {
                 as: "tokens",
               },
             ],
-          },
-          {
-            model: sequelize.Wallets,
-            as: "wallet",
           },
           {
             model: sequelize.Users,
@@ -82,7 +80,10 @@ export const repository = {
       return responseRepository.setResult(HTTP_STATUS.OK, result);
     } catch (error) {
       console.log(error);
-      return responseRepository.setResult(HTTP_STATUS.SERVER_ERROR, null);
+      return responseRepository.setResult(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        null,
+      );
     }
   },
   async findByEmail(email, transaction) {
@@ -99,7 +100,10 @@ export const repository = {
       return responseRepository.setResult(HTTP_STATUS.OK, result);
     } catch (error) {
       console.log(error);
-      return responseRepository.setResult(HTTP_STATUS.SERVER_ERROR, null);
+      return responseRepository.setResult(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        null,
+      );
     }
   },
 
@@ -117,7 +121,10 @@ export const repository = {
       return responseRepository.setResult(HTTP_STATUS.OK, result);
     } catch (error) {
       console.log(error);
-      return responseRepository.setResult(HTTP_STATUS.SERVER_ERROR, null);
+      return responseRepository.setResult(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        null,
+      );
     }
   },
 

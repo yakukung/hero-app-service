@@ -62,7 +62,6 @@ export const mapping = {
         auth_provider: data.result.auth_provider,
         roles: role,
         point: data.result.point,
-        wallet: data.result.wallet.balance,
         tokens: data.accessToken
           ? {
               access_token: data.accessToken,

@@ -40,11 +40,6 @@ export const UsersPayments = sequelize.define(
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
-    currency: {
-      type: DataTypes.STRING(10),
-      allowNull: false,
-      defaultValue: "THB",
-    },
     payment_status: {
       type: DataTypes.ENUM,
       values: PAYMENT_STATUS,
@@ -101,4 +96,3 @@ export const UsersPayments = sequelize.define(
     ],
   }
 );
-

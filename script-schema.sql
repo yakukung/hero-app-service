@@ -882,15 +882,6 @@ BEGIN
   END IF;
 END$$
 
-CREATE TRIGGER before_insert_wallets
-BEFORE INSERT ON `wallets`
-FOR EACH ROW
-BEGIN
-  IF NEW.`id` IS NULL OR NEW.`id` = '' THEN
-    SET NEW.`id` = UUIDV7();
-  END IF;
-END$$
-
 CREATE TRIGGER before_insert_users_follows
 BEFORE INSERT ON `users_follows`
 FOR EACH ROW

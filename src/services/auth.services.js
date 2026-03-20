@@ -13,7 +13,6 @@ import { mapping as usersMapping } from "../models/mapping/users.mapping.js";
 import { STATUS_FLAG } from "../constants/status_flag.constants.js";
 import { AUTH_PROVIDER } from "../constants/auth_provider.constants.js";
 import { repository as userProvidersRepository } from "../repositories/user_providers.repositories.js";
-import { repository as walletsRepository } from "../repositories/wallets.repositories.js";
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -94,20 +93,6 @@ export const service = {
         transaction,
       );
       switch (createUser.code) {
-        case HTTP_STATUS.CREATED.code:
-          break;
-        case HTTP_STATUS.FAILED.code:
-          return responseTemplates.setFailedResponse(RESPONSE_MESSAGES.FAILED);
-        default:
-          return responseTemplates.setInternalServerErrorResponse(
-            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
-          );
-      }
-      const createWallet = await walletsRepository.createWallet(
-        createUser.result.id,
-        transaction,
-      );
-      switch (createWallet.code) {
         case HTTP_STATUS.CREATED.code:
           break;
         case HTTP_STATUS.FAILED.code:
@@ -422,23 +407,6 @@ export const service = {
               await transaction.rollback();
               return responseTemplates.setFailedResponse(
                 RESPONSE_MESSAGES.FAILED,
-              );
-          }
-
-          const createWallet = await walletsRepository.createWallet(
-            createUser.result.id,
-            transaction,
-          );
-          switch (createWallet.code) {
-            case HTTP_STATUS.CREATED.code:
-              break;
-            case HTTP_STATUS.FAILED.code:
-              return responseTemplates.setFailedResponse(
-                RESPONSE_MESSAGES.FAILED,
-              );
-            default:
-              return responseTemplates.setInternalServerErrorResponse(
-                RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
               );
           }
           break;

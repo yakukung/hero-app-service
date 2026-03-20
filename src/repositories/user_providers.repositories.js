@@ -32,7 +32,10 @@ export const repository = {
       return responseRepository.setResult(HTTP_STATUS.OK, result);
     } catch (error) {
       console.log(error);
-      return responseRepository.setResult(HTTP_STATUS.SERVER_ERROR, null);
+      return responseRepository.setResult(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        null,
+      );
     }
   },
 
