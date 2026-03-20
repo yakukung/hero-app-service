@@ -154,8 +154,7 @@ CREATE TABLE `users` (
   `status_modified_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขสถานะล่าสุด',
   `role_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id กลุ่มผู้ใช้งานที่อ้างถึง',
   `point` INTEGER DEFAULT 0 NOT NULL COMMENT 'เก็บคะแนนของผู้ใช้',
-  `keyword` json NULL COMMENT 'เก็บ keyword ของผู้ใช้',
-  `total_wallet` DECIMAL(19, 2) NOT NULL DEFAULT 0.00 COMMENT 'เก็บ wallet ของผู้ใช้',
+  `keyword` json NULL COMMENT 'เก็บ keyword ของผู้ใข้',
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_email` (`email`),
   CONSTRAINT `fk_users_role_id`
@@ -622,7 +621,7 @@ CREATE TABLE `users_plans` (
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูลการสมัครสมาชิกของผู้ใช้';
 
-CREATE TABLE `wallets` (
+CREATE TABLE `wallet_topups` (
   `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ของรายการเติมเงิน',
   `amount` DECIMAL(19, 2) NOT NULL DEFAULT 0.00 COMMENT 'เก็บจำนวนเงินที่ต้องการเติม',
   `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
