@@ -497,9 +497,11 @@ export const service = {
       );
       if (findFollow.code === HTTP_STATUS.OK.code) {
         await transaction.rollback();
-        return responseTemplates.setConflictResponse(
-          RESPONSE_MESSAGES.DATA_ALREADY_EXIST,
-        );
+        return responseTemplates.setOKResponse({
+          follower_id,
+          following_id: id,
+          already_following: true,
+        });
       }
       if (findFollow.code !== HTTP_STATUS.NOT_FOUND.code) {
         await transaction.rollback();
@@ -518,9 +520,11 @@ export const service = {
           break;
         case HTTP_STATUS.CONFLICT.code:
           await transaction.rollback();
-          return responseTemplates.setConflictResponse(
-            RESPONSE_MESSAGES.DATA_ALREADY_EXIST,
-          );
+          return responseTemplates.setOKResponse({
+            follower_id,
+            following_id: id,
+            already_following: true,
+          });
         case HTTP_STATUS.FAILED.code:
           await transaction.rollback();
           return responseTemplates.setFailedResponse(RESPONSE_MESSAGES.FAILED);
@@ -532,7 +536,10 @@ export const service = {
       }
 
       await transaction.commit();
-      return responseTemplates.setNoContentResponse();
+      return responseTemplates.setCreatedResponse({
+        follower_id,
+        following_id: id,
+      });
     } catch (error) {
       await transaction.rollback();
       console.error(error);
@@ -575,9 +582,7 @@ export const service = {
       );
       if (findFollow.code === HTTP_STATUS.NOT_FOUND.code) {
         await transaction.rollback();
-        return responseTemplates.setNotFoundResponse(
-          RESPONSE_MESSAGES.DATA_NOT_FOUND,
-        );
+        return responseTemplates.setNoContentResponse();
       }
       if (findFollow.code !== HTTP_STATUS.OK.code) {
         await transaction.rollback();
@@ -596,9 +601,7 @@ export const service = {
           break;
         case HTTP_STATUS.NOT_FOUND.code:
           await transaction.rollback();
-          return responseTemplates.setNotFoundResponse(
-            RESPONSE_MESSAGES.DATA_NOT_FOUND,
-          );
+          return responseTemplates.setNoContentResponse();
         case HTTP_STATUS.FAILED.code:
           await transaction.rollback();
           return responseTemplates.setFailedResponse(RESPONSE_MESSAGES.FAILED);
