@@ -3,7 +3,7 @@
     "dev": "nodemon server.js",
     "start": "node server.js"
   },
-  "name": "nodejs-hero-app",
+  "name": "hero-app-service",
   "type": "module",
   "dependencies": {
     "bcrypt": "^6.0.0",
