@@ -2,6 +2,7 @@ import { DataTypes } from "sequelize";
 import { sequelize } from "../../configs/sequelize.configs.js";
 import { v7 as uuidv7 } from "uuid";
 import { STATUS_FLAG } from "../../constants/status_flag.constants.js";
+import { ACTIVE_INACTIVE_STATUS } from "../../constants/db_schema.constants.js";
 
 export const UsersFollows = sequelize.define(
   "users_follows",
@@ -34,8 +35,7 @@ export const UsersFollows = sequelize.define(
       defaultValue: true,
     },
     status_flag: {
-      type: DataTypes.ENUM,
-      values: Object.values(STATUS_FLAG),
+      type: DataTypes.ENUM(...ACTIVE_INACTIVE_STATUS),
       allowNull: false,
       defaultValue: STATUS_FLAG.ACTIVE,
     },

@@ -23,7 +23,10 @@ import {
   accessTokenExpireMs,
   refreshTokenExpireMs,
 } from "../utils/timeConverter.utils.js";
-import { sendResetPasswordEmail, sendVerificationEmail } from "../utils/mail.utils.js";
+import {
+  sendResetPasswordEmail,
+  sendVerificationEmail,
+} from "../utils/mail.utils.js";
 
 export const service = {
   async register(req, res) {
@@ -520,8 +523,7 @@ export const service = {
       const resetSecret =
         process.env.JWT_SECRET_RESET_PASSWORD ||
         process.env.JWT_SECRET_ACCESS_TOKEN;
-      const resetExpiresIn =
-        process.env.JWT_EXPIRE_RESET_PASSWORD || "15m";
+      const resetExpiresIn = process.env.JWT_EXPIRE_RESET_PASSWORD || "15m";
 
       const resetToken = jwt.sign(
         {
@@ -593,10 +595,7 @@ export const service = {
         );
       }
 
-      const findUser = await usersRepository.findById(
-        decoded.sub,
-        transaction,
-      );
+      const findUser = await usersRepository.findById(decoded.sub, transaction);
       switch (findUser.code) {
         case HTTP_STATUS.OK.code:
           break;

@@ -3,6 +3,7 @@ import { sequelize } from "../../configs/sequelize.configs.js";
 import { AUTH_PROVIDER } from "../../constants/auth_provider.constants.js";
 import { v7 as uuidv7 } from "uuid";
 import { STATUS_FLAG } from "../../constants/status_flag.constants.js";
+import { ACCOUNT_STATUS } from "../../constants/db_schema.constants.js";
 
 export const Users = sequelize.define(
   "users",
@@ -52,14 +53,18 @@ export const Users = sequelize.define(
       type: DataTypes.JSON,
       allowNull: true,
     },
+    total_wallet: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true,
+      defaultValue: 0,
+    },
     visible_flag: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: true,
     },
     status_flag: {
-      type: DataTypes.ENUM,
-      values: Object.values(STATUS_FLAG),
+      type: DataTypes.ENUM(...ACCOUNT_STATUS),
       allowNull: false,
       defaultValue: STATUS_FLAG.ACTIVE,
     },
@@ -94,6 +99,18 @@ export const Users = sequelize.define(
         name: "unique_email",
         unique: true,
         fields: ["email"],
+      },
+      {
+        name: "idx_users_username",
+        fields: ["username"],
+      },
+      {
+        name: "idx_users_role_id",
+        fields: ["role_id"],
+      },
+      {
+        name: "idx_users_status_flag",
+        fields: ["status_flag"],
       },
     ],
     hooks: {

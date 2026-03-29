@@ -1,12 +1,13 @@
 import { DataTypes } from "sequelize";
 import { v7 as uuidv7 } from "uuid";
 import { sequelize } from "../../configs/sequelize.configs.js";
+import {
+  REPORT_POST_SHEET_TYPES,
+  REPORT_STATUS,
+} from "../../constants/db_schema.constants.js";
 
-const REPORT_TYPES = ["SPAM", "ABUSE", "BUG", "OTHER"];
-const REPORT_STATUS = ["PENDING", "REVIEWING", "RESOLVED", "REJECTED"];
-
-export const UsersReports = sequelize.define(
-  "users_reports",
+export const ReportSheets = sequelize.define(
+  "report_sheets",
   {
     id: {
       type: DataTypes.UUID,
@@ -14,17 +15,16 @@ export const UsersReports = sequelize.define(
       primaryKey: true,
       defaultValue: () => uuidv7(),
     },
-    reference_id: {
+    sheet_id: {
       type: DataTypes.UUID,
       allowNull: false,
-    },
-    reference_table: {
-      type: DataTypes.STRING(255),
-      allowNull: false,
+      references: {
+        model: "sheets",
+        key: "id",
+      },
     },
     report_type: {
-      type: DataTypes.ENUM,
-      values: REPORT_TYPES,
+      type: DataTypes.ENUM(...REPORT_POST_SHEET_TYPES),
       allowNull: false,
     },
     reporter_id: {
@@ -37,7 +37,7 @@ export const UsersReports = sequelize.define(
     },
     content: {
       type: DataTypes.TEXT,
-      allowNull: false,
+      allowNull: true,
     },
     visible_flag: {
       type: DataTypes.BOOLEAN,
@@ -45,8 +45,7 @@ export const UsersReports = sequelize.define(
       defaultValue: true,
     },
     status_flag: {
-      type: DataTypes.ENUM,
-      values: REPORT_STATUS,
+      type: DataTypes.ENUM(...REPORT_STATUS),
       allowNull: false,
       defaultValue: "PENDING",
     },
@@ -74,7 +73,21 @@ export const UsersReports = sequelize.define(
     },
   },
   {
-    tableName: "users_reports",
+    tableName: "report_sheets",
     timestamps: false,
-  }
+    indexes: [
+      {
+        name: "idx_sheet_id",
+        fields: ["sheet_id"],
+      },
+      {
+        name: "idx_reporter_id",
+        fields: ["reporter_id"],
+      },
+      {
+        name: "idx_status_flag",
+        fields: ["status_flag"],
+      },
+    ],
+  },
 );

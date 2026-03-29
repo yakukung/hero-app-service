@@ -1,7 +1,7 @@
 import { DataTypes } from "sequelize";
 import { v7 as uuidv7 } from "uuid";
 import { sequelize } from "../../configs/sequelize.configs.js";
-import { STATUS_FLAG } from "../../constants/status_flag.constants.js";
+import { ACTIVE_INACTIVE_STATUS } from "../../constants/db_schema.constants.js";
 
 const BILLING_INTERVALS = ["DAY", "WEEK", "MONTH", "YEAR"];
 
@@ -17,7 +17,6 @@ export const Plans = sequelize.define(
     name: {
       type: DataTypes.STRING(150),
       allowNull: false,
-      unique: true,
     },
     description: {
       type: DataTypes.TEXT,
@@ -26,11 +25,6 @@ export const Plans = sequelize.define(
     price: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
-    },
-    currency: {
-      type: DataTypes.STRING(10),
-      allowNull: false,
-      defaultValue: "THB",
     },
     billing_interval: {
       type: DataTypes.ENUM,
@@ -48,10 +42,9 @@ export const Plans = sequelize.define(
       defaultValue: true,
     },
     status_flag: {
-      type: DataTypes.ENUM,
-      values: Object.values(STATUS_FLAG),
+      type: DataTypes.ENUM(...ACTIVE_INACTIVE_STATUS),
       allowNull: false,
-      defaultValue: STATUS_FLAG.ACTIVE,
+      defaultValue: "ACTIVE",
     },
     created_at: {
       type: DataTypes.DATE(3),
@@ -75,11 +68,16 @@ export const Plans = sequelize.define(
       type: DataTypes.DATE(3),
       allowNull: true,
     },
-
   },
   {
     tableName: "plans",
     timestamps: false,
-  }
+    indexes: [
+      {
+        name: "unique_plan_name",
+        unique: true,
+        fields: ["name"],
+      },
+    ],
+  },
 );
-

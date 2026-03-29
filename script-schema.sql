@@ -1,8 +1,15 @@
--- SET FOREIGN_KEY_CHECKS = 0;
+SET FOREIGN_KEY_CHECKS = 0;
+DROP FUNCTION IF EXISTS `UUIDV7`;
+
+DROP TABLE IF EXISTS `buy_sheets`;
+DROP TABLE IF EXISTS `buy_plans`;
+DROP TABLE IF EXISTS `report_users`;
+DROP TABLE IF EXISTS `report_sheets`;
+DROP TABLE IF EXISTS `report_posts`;
+DROP TABLE IF EXISTS `users_follows`;
+DROP TABLE IF EXISTS `wallet_topups`;
 DROP TABLE IF EXISTS `users_plans`;
 DROP TABLE IF EXISTS `plans`;
-DROP TABLE IF EXISTS `users_payments`;
-DROP TABLE IF EXISTS `users_reports`;
 DROP TABLE IF EXISTS `posts_shares`;
 DROP TABLE IF EXISTS `posts_comments`;
 DROP TABLE IF EXISTS `posts_likes`;
@@ -12,8 +19,7 @@ DROP TABLE IF EXISTS `users_sheets_answers`;
 DROP TABLE IF EXISTS `sheets_answers`;
 DROP TABLE IF EXISTS `sheets_questions`;
 DROP TABLE IF EXISTS `sheets_files`;
-DROP TABLE IF EXISTS `sheets_keywords`;
-DROP TABLE IF EXISTS `sheets_categories`;
+DROP TABLE IF EXISTS `sheets_reviews`;
 DROP TABLE IF EXISTS `sheets`;
 DROP TABLE IF EXISTS `keywords`;
 DROP TABLE IF EXISTS `categories`;
@@ -24,7 +30,6 @@ DROP TABLE IF EXISTS `users`;
 DROP TABLE IF EXISTS `scopes`;
 DROP TABLE IF EXISTS `permissions`;
 DROP TABLE IF EXISTS `roles`;
-DROP FUNCTION IF EXISTS `UUIDV7`;
 
 DROP TRIGGER IF EXISTS `before_insert_roles`;
 DROP TRIGGER IF EXISTS `before_insert_permissions`;
@@ -33,30 +38,30 @@ DROP TRIGGER IF EXISTS `before_insert_users`;
 DROP TRIGGER IF EXISTS `before_insert_user_providers`;
 DROP TRIGGER IF EXISTS `before_insert_sessions`;
 DROP TRIGGER IF EXISTS `before_insert_tokens`;
+DROP TRIGGER IF EXISTS `before_insert_sheets`;
 DROP TRIGGER IF EXISTS `before_insert_categories`;
 DROP TRIGGER IF EXISTS `before_insert_keywords`;
-DROP TRIGGER IF EXISTS `before_insert_sheets`;
-DROP TRIGGER IF EXISTS `before_insert_sheets_categories`;
-DROP TRIGGER IF EXISTS `before_insert_sheets_keywords`;
 DROP TRIGGER IF EXISTS `before_insert_sheets_files`;
 DROP TRIGGER IF EXISTS `before_insert_sheets_questions`;
 DROP TRIGGER IF EXISTS `before_insert_sheets_answers`;
 DROP TRIGGER IF EXISTS `before_insert_users_sheets_answers`;
 DROP TRIGGER IF EXISTS `before_insert_users_sheets_favorites`;
+DROP TRIGGER IF EXISTS `before_insert_sheets_reviews`;
 DROP TRIGGER IF EXISTS `before_insert_posts`;
-DROP TRIGGER IF EXISTS `before_insert_post_likes`;
-DROP TRIGGER IF EXISTS `before_insert_post_comments`;
+DROP TRIGGER IF EXISTS `before_insert_posts_likes`;
+DROP TRIGGER IF EXISTS `before_insert_posts_comments`;
 DROP TRIGGER IF EXISTS `before_insert_posts_shares`;
-DROP TRIGGER IF EXISTS `before_insert_users_reports`;
-DROP TRIGGER IF EXISTS `before_insert_user_payments`;
+DROP TRIGGER IF EXISTS `before_insert_users_follows`;
+DROP TRIGGER IF EXISTS `before_insert_report_posts`;
+DROP TRIGGER IF EXISTS `before_insert_report_sheets`;
+DROP TRIGGER IF EXISTS `before_insert_report_users`;
 DROP TRIGGER IF EXISTS `before_insert_plans`;
 DROP TRIGGER IF EXISTS `before_insert_users_plans`;
+DROP TRIGGER IF EXISTS `before_insert_buy_plans`;
+DROP TRIGGER IF EXISTS `before_insert_buy_sheets`;
+DROP TRIGGER IF EXISTS `before_insert_wallet_topups`;
 
--- SET FOREIGN_KEY_CHECKS = 1;
-
--- =========================================
--- Function: UUIDV7 (RFC 9562 compliant)
--- =========================================
+DELIMITER $$
 CREATE FUNCTION UUIDV7()
 RETURNS CHAR(36)
 DETERMINISTIC
@@ -86,7 +91,9 @@ BEGIN
         variant_hex, '-',
         node_hex
     ));
-END
+END$$
+
+DELIMITER ;
 
 -- ====================
 -- Authentication
@@ -95,7 +102,7 @@ CREATE TABLE `roles` (
   `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id กลุ่มผู้ใช้งาน',
   `name` VARCHAR(30) DEFAULT NULL COMMENT 'เก็บชื่อกลุ่มผู้ใช้งาน',
   `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
-  `status_flag` ENUM('PENDING','ACTIVE','INACTIVE','SUSPENDED','TERMINATED') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
+  `status_flag` ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
   `created_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่สร้างข้อมูล',
   `created_by` VARCHAR(255) NOT NULL DEFAULT 'SYSTEM' COMMENT 'เก็บ id ผู้สร้างข้อมูล',
   `updated_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขล่าสุด',
@@ -109,7 +116,7 @@ CREATE TABLE `permissions` (
   `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id สิทธิ์การใช้งาน',
   `name` VARCHAR(30) DEFAULT NULL COMMENT 'เก็บชื่อสิทธิ์การใช้งาน',
   `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
-  `status_flag` ENUM('PENDING','ACTIVE','INACTIVE','SUSPENDED','TERMINATED') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
+  `status_flag` ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
   `created_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่สร้างข้อมูล',
   `created_by` VARCHAR(255) NOT NULL DEFAULT 'SYSTEM' COMMENT 'เก็บ id ผู้สร้างข้อมูล',
   `updated_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขล่าสุด',
@@ -124,7 +131,7 @@ CREATE TABLE `scopes` (
   `role_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id กลุ่มผู้ใช้งานที่อ้างถึง',
   `permission_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id สิทธิ์การใช้งานที่อ้างถึง',
   `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
-  `status_flag` ENUM('PENDING','ACTIVE','INACTIVE','SUSPENDED','TERMINATED') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
+  `status_flag` ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
   `created_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่สร้างข้อมูล',
   `created_by` VARCHAR(255) NOT NULL DEFAULT 'SYSTEM' COMMENT 'เก็บ id ผู้สร้างข้อมูล',
   `updated_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขล่าสุด',
@@ -155,8 +162,12 @@ CREATE TABLE `users` (
   `role_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id กลุ่มผู้ใช้งานที่อ้างถึง',
   `point` INTEGER DEFAULT 0 NOT NULL COMMENT 'เก็บคะแนนของผู้ใช้',
   `keyword` json NULL COMMENT 'เก็บ keyword ของผู้ใข้',
+  `total_wallet` DECIMAL(10,2) DEFAULT 0.00 COMMENT 'เก็บยอดเงินในวอลเล็ตของผู้ใช้',
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_email` (`email`),
+  KEY `idx_users_username` (`username`),
+  KEY `idx_users_role_id` (`role_id`),
+  KEY `idx_users_status_flag` (`status_flag`),
   CONSTRAINT `fk_users_role_id`
     FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูลผู้ใช้';
@@ -193,6 +204,7 @@ CREATE TABLE `sessions` (
   `user_agent` VARCHAR(500) DEFAULT NULL COMMENT 'เก็บข้อมูล User Agent ของอุปกรณ์หรือเบราว์เซอร์',
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_refresh_token` (`refresh_token`),
+  KEY `idx_sessions_user_id` (`user_id`),
   CONSTRAINT `fk_sessions_user_id`
     FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB
@@ -207,46 +219,15 @@ CREATE TABLE `tokens` (
   `revoked_flag` BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'สถานะเพิกถอน access token',
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_access_token` (`access_token`),
+  KEY `idx_tokens_session_id` (`session_id`),
   CONSTRAINT `fk_tokens_session_id`
     FOREIGN KEY (`session_id`) REFERENCES `sessions` (`id`)
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูล Access Token ของผู้ใช้';
 
-
 -- ====================
 -- Sheets
 -- ====================
-CREATE TABLE `categories` (
-  `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id หมวดหมู่เอกสาร',
-  `name` VARCHAR(150) NOT NULL COMMENT 'เก็บชื่อหมวดหมู่เอกสาร',
-  `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
-  `status_flag` ENUM('PENDING','ACTIVE','INACTIVE','SUSPENDED','TERMINATED') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
-  `created_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่สร้างข้อมูล',
-  `created_by` VARCHAR(255) NOT NULL DEFAULT 'SYSTEM' COMMENT 'เก็บผู้สร้างข้อมูล',
-  `updated_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขล่าสุด',
-  `updated_by` VARCHAR(255) NULL COMMENT 'เก็บ id ผู้แก้ไขข้อมูลล่าสุด',
-  `status_modified_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขสถานะล่าสุด',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_sheet_category_name` (`name`)
-) ENGINE=InnoDB
-  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูลหมวดหมู่เอกสารสรุปเนื้อหา';
-
-CREATE TABLE `keywords` (
-  `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id คำค้นหา',
-  `name` VARCHAR(150) NOT NULL COMMENT 'เก็บชื่อคำค้นหา',
-  `usage_count` INT NOT NULL DEFAULT 0 COMMENT 'เก็บจำนวนการใช้งาน',
-  `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
-  `status_flag` ENUM('PENDING','ACTIVE','INACTIVE','SUSPENDED','TERMINATED') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
-  `created_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่สร้างข้อมูล',
-  `created_by` VARCHAR(255) NOT NULL DEFAULT 'SYSTEM' COMMENT 'เก็บผู้สร้างข้อมูล',
-  `updated_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขล่าสุด',
-  `updated_by` VARCHAR(255) NULL COMMENT 'เก็บ id ผู้แก้ไขข้อมูลล่าสุด',
-  `status_modified_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขสถานะล่าสุด',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_keyword_name` (`name`)
-) ENGINE=InnoDB
-  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูลคำค้นหา';
-
 CREATE TABLE `sheets` (
   `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id เอกสารสรุปเนื้อหา',
   `author_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ผู้ใช้ที่อ้างถึงในตาราง users',
@@ -254,84 +235,60 @@ CREATE TABLE `sheets` (
   `description` TEXT DEFAULT NULL COMMENT 'เก็บคำอธิบายเพิ่มเติมของเอกสาร',
   `rating` DECIMAL(3,1) DEFAULT NULL COMMENT 'เก็บคะแนนความพึงพอใจ',
   `price` DECIMAL(10,2) DEFAULT NULL COMMENT 'เก็บราคาเอกสาร',
-  `course`  VARCHAR(255) NOT NULL COMMENT 'เก็บชื่อรายวิชา',
   `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
-  `status_flag` ENUM('PENDING','ACTIVE','INACTIVE','SUSPENDED','TERMINATED') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
+  `status_flag` ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
   `created_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่สร้างข้อมูล',
   `created_by` VARCHAR(255) NOT NULL DEFAULT 'SYSTEM' COMMENT 'เก็บผู้สร้างข้อมูล',
   `updated_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขล่าสุด',
   `updated_by` VARCHAR(255) NULL COMMENT 'เก็บ id ผู้แก้ไขข้อมูลล่าสุด',
   `status_modified_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขสถานะล่าสุด',
   PRIMARY KEY (`id`),
+  KEY `idx_sheets_author_id` (`author_id`),
+  KEY `idx_sheets_status_flag` (`status_flag`),
+  KEY `idx_sheets_rating` (`rating`),
+  KEY `idx_sheets_price` (`price`),
   CONSTRAINT `fk_sheets_author_id`
     FOREIGN KEY (`author_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูลเอกสารสรุปเนื้อหา';
 
-CREATE TABLE `sheets_categories` (
+CREATE TABLE `categories` (
   `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id การเชื่อมโยงเอกสารกับหมวดหมู่',
   `sheet_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id เอกสารสรุปที่อ้างถึงในตาราง sheets',
-  `category_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id หมวดหมู่ที่อ้างถึงในตาราง categories',
+  `name` ENUM('วิทยาศาสตร์','คณิตศาสตร์','คอมพิวเตอร์','วิศวกรรมศาสตร์','ภาษาไทย','ภาษาอังกฤษ','ภาษาอื่นๆ','สังคมศึกษา','บริหารธุรกิจ','สุขภาพ','กฎหมาย','ศิลปะ','อื่นๆ') NOT NULL COMMENT 'เก็บชื่อหมวดหมู่',
   `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
-  `status_flag` ENUM('PENDING','ACTIVE','INACTIVE','SUSPENDED','TERMINATED') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
+  `status_flag` ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
   `created_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่สร้างข้อมูล',
   `created_by` VARCHAR(255) NOT NULL DEFAULT 'SYSTEM' COMMENT 'เก็บผู้สร้างข้อมูล',
   `updated_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขล่าสุด',
   `updated_by` VARCHAR(255) NULL COMMENT 'เก็บ id ผู้แก้ไขข้อมูลล่าสุด',
   `status_modified_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขสถานะล่าสุด',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_sheet_category` (`sheet_id`, `category_id`),
-  KEY `idx_sheets_categories_category_id` (`category_id`),
-  CONSTRAINT `fk_sheets_categories_sheet_id`
-    FOREIGN KEY (`sheet_id`) REFERENCES `sheets` (`id`),
-  CONSTRAINT `fk_sheets_categories_category_id`
-    FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`)
+  KEY `idx_categories_sheet_id` (`sheet_id`),
+  KEY `idx_categories_name` (`name`),
+  CONSTRAINT `fk_categories_sheet_id`
+    FOREIGN KEY (`sheet_id`) REFERENCES `sheets` (`id`)
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเชื่อมโยงเอกสารสรุปเนื้อหากับหมวดหมู่';
 
-CREATE TABLE `sheets_keywords` (
+CREATE TABLE `keywords` (
   `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id การเชื่อมโยงเอกสารกับคำค้นหา',
   `sheet_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id เอกสารสรุปที่อ้างถึงในตาราง sheets',
-  `keyword_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id คำค้นหาที่อ้างถึงในตาราง keywords',
+  `name` VARCHAR(255) NOT NULL COMMENT 'เก็บชื่อคำค้นหา',
   `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
-  `status_flag` ENUM('PENDING','ACTIVE','INACTIVE','SUSPENDED','TERMINATED') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
+  `status_flag` ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
   `created_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่สร้างข้อมูล',
   `created_by` VARCHAR(255) NOT NULL DEFAULT 'SYSTEM' COMMENT 'เก็บผู้สร้างข้อมูล',
   `updated_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขล่าสุด',
   `updated_by` VARCHAR(255) NULL COMMENT 'เก็บ id ผู้แก้ไขข้อมูลล่าสุด',
   `status_modified_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขสถานะล่าสุด',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_sheet_keyword` (`sheet_id`, `keyword_id`),
-  KEY `idx_sheets_keywords_keyword_id` (`keyword_id`),
-  CONSTRAINT `fk_sheets_keywords_sheet_id`
-    FOREIGN KEY (`sheet_id`) REFERENCES `sheets` (`id`),
-  CONSTRAINT `fk_sheets_keywords_keyword_id`
-    FOREIGN KEY (`keyword_id`) REFERENCES `keywords` (`id`)
+  KEY `idx_keywords_sheet_id` (`sheet_id`),
+  KEY `idx_keywords_name` (`name`),
+  CONSTRAINT `fk_keywords_sheet_id`
+    FOREIGN KEY (`sheet_id`) REFERENCES `sheets` (`id`)
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเชื่อมโยงเอกสารสรุปเนื้อหากับคำค้นหา';
-
-CREATE TABLE `sheets_reviews` (
-  `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ข้อมูลรีวิวของชีต',
-  `sheet_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ที่อ้างถึงในตาราง sheets',
-  `user_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ที่อ้างถึงในตาราง users',
-  `content` TEXT NULL COMMENT 'เก็บเนื้อหาของรีวิวชีต',
-  `score` INT NOT NULL DEFAULT 0 COMMENT 'เก็บคะแนนรีวิวชีต',
-  `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
-  `status_flag` ENUM('PENDING','ACTIVE','INACTIVE','SUSPENDED','TERMINATED') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
-  `created_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่สร้างข้อมูล',
-  `created_by` VARCHAR(255) NOT NULL DEFAULT 'SYSTEM' COMMENT 'เก็บผู้สร้างข้อมูล',
-  `updated_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขล่าสุด',
-  `updated_by` VARCHAR(255) NULL COMMENT 'เก็บ id ผู้แก้ไขข้อมูลล่าสุด',
-  `status_modified_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขสถานะล่าสุด',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_sheet_keyword` (`sheet_id`, `keyword_id`),
-  KEY `idx_sheets_keywords_keyword_id` (`keyword_id`),
-  CONSTRAINT `fk_sheets_keywords_sheet_id`
-    FOREIGN KEY (`sheet_id`) REFERENCES `sheets` (`id`),
-  CONSTRAINT `fk_sheets_keywords_keyword_id`
-    FOREIGN KEY (`keyword_id`) REFERENCES `keywords` (`id`)
-) ENGINE=InnoDB
-  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูลรีวิวของชีต';
 
 CREATE TABLE `sheets_files` (
   `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ไฟล์เอกสาร',
@@ -343,15 +300,19 @@ CREATE TABLE `sheets_files` (
   `index` INT NOT NULL DEFAULT 1 COMMENT 'เก็บลำดับไฟล์เอกสาร',
   `checksum` VARCHAR(255) NOT NULL COMMENT 'เก็บค่า checksum ไฟล์เอกสาร',
   `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
-  `status_flag` ENUM('PENDING','ACTIVE','INACTIVE','SUSPENDED','TERMINATED') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
+  `status_flag` ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
   `created_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่สร้างข้อมูล',
   `created_by` VARCHAR(255) NOT NULL DEFAULT 'SYSTEM' COMMENT 'เก็บผู้สร้างข้อมูล',
   `updated_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขล่าสุด',
   `updated_by` VARCHAR(255) NULL COMMENT 'เก็บ id ผู้แก้ไขข้อมูลล่าสุด',
   `status_modified_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขสถานะล่าสุด',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_sheets_files_sheet_id` (`sheet_id`),
+  CONSTRAINT `fk_sheets_files_sheet_id`
+    FOREIGN KEY (`sheet_id`) REFERENCES `sheets` (`id`)
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูลไฟล์เอกสารสรุปเนื้อหา';
+
 
 CREATE TABLE `sheets_questions` (
   `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id คำถามท้ายบท',
@@ -360,7 +321,7 @@ CREATE TABLE `sheets_questions` (
   `explanation` TEXT DEFAULT NULL COMMENT 'เก็บคำอธิบายเพิ่มเติมของคำตอบหรือเฉลย',
   `index` INT NOT NULL DEFAULT 1 COMMENT 'เก็บลำดับของคำถามในเอกสาร',
   `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
-  `status_flag` ENUM('PENDING','ACTIVE','INACTIVE','SUSPENDED','TERMINATED') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
+  `status_flag` ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
   `created_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่สร้างข้อมูล',
   `created_by` VARCHAR(255) NOT NULL DEFAULT 'SYSTEM' COMMENT 'เก็บผู้สร้างข้อมูล',
   `updated_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขล่าสุด',
@@ -380,8 +341,7 @@ CREATE TABLE `sheets_answers` (
   `is_correct` BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'ระบุว่าคำตอบนี้ถูกต้องหรือไม่',
   `index` INT NOT NULL DEFAULT 1 COMMENT 'เก็บลำดับของคำตอบในคำถามเดียวกัน',
   `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
-  `status_flag` ENUM('PENDING','ACTIVE','INACTIVE','SUSPENDED','TERMINATED') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
-  `created_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่สร้างข้อมูล',
+  `status_flag` ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
   `created_by` VARCHAR(255) NOT NULL DEFAULT 'SYSTEM' COMMENT 'เก็บผู้สร้างข้อมูล',
   `updated_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขล่าสุด',
   `updated_by` VARCHAR(255) NULL COMMENT 'เก็บ id ผู้แก้ไขข้อมูลล่าสุด',
@@ -402,7 +362,7 @@ CREATE TABLE `users_sheets_answers` (
   `selected_answer_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id คำตอบที่ผู้ใช้เลือก (อ้างถึง sheet_answers.id)',
   `is_correct` BOOLEAN DEFAULT NULL COMMENT 'เก็บผลลัพธ์ว่าคำตอบที่เลือกถูกหรือไม่ (เก็บขณะที่ตอบ)',
   `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
-  `status_flag` ENUM('PENDING','ACTIVE','INACTIVE','SUSPENDED','TERMINATED') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
+  `status_flag` ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
   `created_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่สร้างข้อมูล',
   `created_by` VARCHAR(255) NOT NULL DEFAULT 'SYSTEM' COMMENT 'เก็บผู้สร้างข้อมูล',
   `updated_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขล่าสุด',
@@ -421,12 +381,13 @@ CREATE TABLE `users_sheets_answers` (
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูลว่าผู้ใช้ตอบคำถามข้อไหนและเลือกคำตอบใด';
 
+
 CREATE TABLE `users_sheets_favorites` (
   `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id รายการโปรด',
   `sheet_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id เอกสารสรุปที่อ้างถึงในตาราง sheets',
   `user_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ผู้ใช้ที่อ้างถึงในตาราง users',
   `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
-  `status_flag` ENUM('PENDING','ACTIVE','INACTIVE','SUSPENDED','TERMINATED') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
+  `status_flag` ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
   `created_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่สร้างข้อมูล',
   `created_by` VARCHAR(255) NOT NULL DEFAULT 'SYSTEM' COMMENT 'เก็บผู้สร้างข้อมูล',
   `updated_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขล่าสุด',
@@ -442,6 +403,28 @@ CREATE TABLE `users_sheets_favorites` (
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูลผู้ใช้ที่เพิ่มเอกสารเป็นรายการโปรด';
 
+CREATE TABLE `sheets_reviews` (
+  `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ข้อมูลรีวิวของชีต',
+  `sheet_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ที่อ้างถึงในตาราง sheets',
+  `user_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ที่อ้างถึงในตาราง users',
+  `content` TEXT NULL COMMENT 'เก็บเนื้อหาของรีวิวชีต',
+  `score` INT NOT NULL DEFAULT 0 COMMENT 'เก็บคะแนนรีวิวชีต',
+  `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
+  `status_flag` ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
+  `created_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่สร้างข้อมูล',
+  `created_by` VARCHAR(255) NOT NULL DEFAULT 'SYSTEM' COMMENT 'เก็บผู้สร้างข้อมูล',
+  `updated_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขล่าสุด',
+  `updated_by` VARCHAR(255) NULL COMMENT 'เก็บ id ผู้แก้ไขข้อมูลล่าสุด',
+  `status_modified_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขสถานะล่าสุด',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_user_sheet_review` (`user_id`, `sheet_id`),
+  KEY `idx_sheets_reviews_sheet_id` (`sheet_id`),
+  CONSTRAINT `fk_sheets_reviews_sheet_id`
+    FOREIGN KEY (`sheet_id`) REFERENCES `sheets` (`id`),
+  CONSTRAINT `fk_sheets_reviews_user_id`
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูลรีวิวของชีต';
 
 -- ====================
 -- Posts
@@ -455,13 +438,17 @@ CREATE TABLE `posts` (
   `comment_count` INT NOT NULL DEFAULT 0 COMMENT 'เก็บจำนวนคอมเมนต์',
   `share_count` INT NOT NULL DEFAULT 0 COMMENT 'เก็บจำนวนแชร์',
   `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
-  `status_flag` ENUM('PENDING','ACTIVE','INACTIVE','SUSPENDED','TERMINATED') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
+  `status_flag` ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
   `created_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่สร้างข้อมูล',
   `created_by` VARCHAR(255) NOT NULL DEFAULT 'SYSTEM' COMMENT 'เก็บผู้สร้างข้อมูล',
   `updated_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขล่าสุด',
   `updated_by` VARCHAR(255) NULL COMMENT 'เก็บ id ผู้แก้ไขข้อมูลล่าสุด',
   `status_modified_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขสถานะล่าสุด',
   PRIMARY KEY (`id`),
+  KEY `idx_posts_sheet_id` (`sheet_id`),
+  KEY `idx_posts_user_id` (`user_id`),
+  KEY `idx_posts_status_flag` (`status_flag`),
+  KEY `idx_posts_created_at` (`created_at`),
   CONSTRAINT `fk_posts_sheet_id`
     FOREIGN KEY (`sheet_id`) REFERENCES `sheets` (`id`),
   CONSTRAINT `fk_posts_user_id`
@@ -474,14 +461,15 @@ CREATE TABLE `posts_likes` (
   `post_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id โพสต์ที่อ้างถึงในตาราง posts',
   `user_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ผู้ใช้ที่อ้างถึงในตาราง users',
   `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
-  `status_flag` ENUM('PENDING','ACTIVE','INACTIVE','SUSPENDED','TERMINATED') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
+  `status_flag` ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
   `created_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่สร้างข้อมูล',
   `created_by` VARCHAR(255) NOT NULL DEFAULT 'SYSTEM' COMMENT 'เก็บผู้สร้างข้อมูล',
   `updated_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขล่าสุด',
   `updated_by` VARCHAR(255) NULL COMMENT 'เก็บ id ผู้แก้ไขข้อมูลล่าสุด',
   `status_modified_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขสถานะล่าสุด',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_user_post_like` (user_id, post_id),
+  UNIQUE KEY `unique_user_post_like` (`user_id`, `post_id`),
+  KEY `idx_posts_likes_post_id` (`post_id`),
   CONSTRAINT `fk_post_likes_post_id`
     FOREIGN KEY (`post_id`) REFERENCES `posts` (`id`),
   CONSTRAINT `fk_post_likes_user_id`
@@ -495,13 +483,15 @@ CREATE TABLE `posts_comments` (
   `user_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ผู้ใช้ที่อ้างถึงในตาราง users',
   `content` TEXT NOT NULL COMMENT 'เก็บเนื้อหาของคอมเมนต์',
   `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
-  `status_flag` ENUM('PENDING','ACTIVE','INACTIVE','SUSPENDED','TERMINATED') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
+  `status_flag` ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
   `created_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่สร้างข้อมูล',
   `created_by` VARCHAR(255) NOT NULL DEFAULT 'SYSTEM' COMMENT 'เก็บผู้สร้างข้อมูล',
   `updated_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขล่าสุด',
   `updated_by` VARCHAR(255) NULL COMMENT 'เก็บ id ผู้แก้ไขข้อมูลล่าสุด',
   `status_modified_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขสถานะล่าสุด',
   PRIMARY KEY (`id`),
+  KEY `idx_posts_comments_post_id` (`post_id`),
+  KEY `idx_posts_comments_user_id` (`user_id`),
   CONSTRAINT `fk_post_comments_post_id`
     FOREIGN KEY (`post_id`) REFERENCES `posts` (`id`),
   CONSTRAINT `fk_post_comments_user_id`
@@ -514,7 +504,7 @@ CREATE TABLE `posts_shares` (
   `post_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id โพสต์ที่อ้างถึงในตาราง posts',
   `user_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ผู้ใช้ที่แชร์อ้างถึงในตาราง users',
   `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
-  `status_flag` ENUM('PENDING','ACTIVE','INACTIVE','SUSPENDED','TERMINATED') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
+  `status_flag` ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
   `created_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่สร้างข้อมูล',
   `created_by` VARCHAR(255) NOT NULL DEFAULT 'SYSTEM' COMMENT 'เก็บผู้สร้างข้อมูล',
   `updated_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขล่าสุด',
@@ -530,62 +520,117 @@ CREATE TABLE `posts_shares` (
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูลผู้ใช้ที่แชร์โพสต์';
 
-CREATE TABLE `users_reports` (
-  `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id รายงาน',
-  `reference_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ของสิ่งที่ถูกรายงาน',
-  `reference_table` VARCHAR(255) NOT NULL COMMENT 'เก็บชื่อตารางของสิ่งที่ถูกรายงาน',
-  `report_type` ENUM('SPAM','ABUSE','BUG','OTHER') NOT NULL COMMENT 'ประเภทของรายงาน',
+-- ====================
+-- Follows
+-- ====================
+CREATE TABLE `users_follows` (
+  `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ของการติดตาม',
+  `follower_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ของผู้ที่เป็นคนกดติดตาม',
+  `following_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ของผู้ที่ถูกติดตาม',
+  `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
+  `status_flag` ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
+  `created_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่สร้างข้อมูล',
+  `created_by` VARCHAR(255) NOT NULL DEFAULT 'SYSTEM' COMMENT 'เก็บผู้สร้างข้อมูล',
+  `updated_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขล่าสุด',
+  `updated_by` VARCHAR(255) NULL COMMENT 'เก็บ id ผู้แก้ไขข้อมูลล่าสุด',
+  `status_modified_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขสถานะล่าสุด',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_follower_following` (`follower_id`, `following_id`),
+  KEY `idx_following_id` (`following_id`), 
+  CONSTRAINT `fk_follows_follower` FOREIGN KEY (`follower_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_follows_following` FOREIGN KEY (`following_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `check_not_self_follow` CHECK (`follower_id` <> `following_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูลการติดตามกันระหว่างผู้ใช้';
+
+
+-- ====================
+-- Reports
+-- ====================
+CREATE TABLE `report_posts` (
+  `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id รายงานโพสต์',
+  `post_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ของโพสต์ที่ถูกรายงาน',
+  `report_type` ENUM('สแปม','เนื้อหาไม่เหมาะสม หรือไม่ถูกต้อง','การกลั่นแกล้ง การคุกคาม หรือการแสดงความเกลียดชัง', 'เนื้อหาเกี่ยวกับความรุนแรง หรือการทำร้ายตัวเอง', 'การละเมิดทรัพย์สินทางปัญญา', 'เนื้อหาสำหรับผู้ใหญ่', 'อื่นๆ') NOT NULL COMMENT 'ประเภทของรายงาน',
   `reporter_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ผู้รายงาน',
-  `content` TEXT NOT NULL COMMENT 'เก็บรายละเอียดของรายงาน',
+  `content` TEXT NULL COMMENT 'เก็บรายละเอียดของรายงาน',
   `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
   `status_flag` ENUM('PENDING','REVIEWING','RESOLVED','REJECTED') NOT NULL DEFAULT 'PENDING' COMMENT 'เก็บสถานะข้อมูล', 
   `created_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่สร้างข้อมูล',
   `created_by` VARCHAR(255) NOT NULL DEFAULT 'SYSTEM' COMMENT 'เก็บผู้สร้างข้อมูล',
-  `updated_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขล่าสุด',
+  `updated_at` TIMESTAMP(3) NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่แก้ไขล่าสุด',
   `updated_by` VARCHAR(255) NULL COMMENT 'เก็บ id ผู้แก้ไขข้อมูลล่าสุด',
   `status_modified_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขสถานะล่าสุด',
   PRIMARY KEY (`id`),
-  CONSTRAINT `fk_users_reports_reporter_id`
-    FOREIGN KEY (`reporter_id`) REFERENCES `users` (`id`)
+  KEY `idx_post_id` (`post_id`),
+  KEY `idx_reporter_id` (`reporter_id`),
+  KEY `idx_status_flag` (`status_flag`),
+  CONSTRAINT `fk_report_posts_post_id`
+    FOREIGN KEY (`post_id`) REFERENCES `posts` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_report_posts_reporter_id`
+    FOREIGN KEY (`reporter_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB
-  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูลรายงาน';
+  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูลการรายงานโพสต์';
 
-
-CREATE TABLE `users_payments` (
-  `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ประวัติการชำระเงิน',
-  `user_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ผู้ใช้ที่ชำระเงินอ้างถึงในตาราง users',
-  `reference_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ของสิ่งที่ชำระเงิน',
-  `reference_table` VARCHAR(100) NOT NULL COMMENT 'เก็บชื่อตารางของสิ่งที่ชำระเงิน',
-  `payment_method` ENUM('PROMPTPAY') NOT NULL COMMENT 'เก็บช่องทางการชำระเงิน (ตอนนี้เก็บแค่พร้อมเพย์เท่านั้น)',
-  `amount` DECIMAL(10,2) NOT NULL COMMENT 'เก็บจำนวนเงินที่ชำระ',
-  `payment_status` ENUM('PENDING', 'SUCCESSFUL', 'FAILED', 'REFUNDED') NOT NULL DEFAULT 'PENDING' COMMENT 'เก็บสถานะการชำระเงินจาก Gateway',
-  `slip_image_url` TEXT DEFAULT NULL COMMENT 'เก็บ URL ของหลักฐานการชำระเงิน',
+CREATE TABLE `report_sheets` (
+  `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id รายงานชีต',
+  `sheet_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ของชีตที่ถูกรายงาน',
+  `report_type` ENUM('สแปม','เนื้อหาไม่เหมาะสม หรือไม่ถูกต้อง','การกลั่นแกล้ง การคุกคาม หรือการแสดงความเกลียดชัง', 'เนื้อหาเกี่ยวกับความรุนแรง หรือการทำร้ายตัวเอง', 'การละเมิดทรัพย์สินทางปัญญา', 'เนื้อหาสำหรับผู้ใหญ่', 'อื่นๆ') NOT NULL COMMENT 'ประเภทของรายงาน',
+  `reporter_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ผู้รายงาน',
+  `content` TEXT NULL COMMENT 'เก็บรายละเอียดของรายงาน',
   `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
-  `status_flag` ENUM('PENDING','ACTIVE','INACTIVE','SUSPENDED','TERMINATED') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
+  `status_flag` ENUM('PENDING','REVIEWING','RESOLVED','REJECTED') NOT NULL DEFAULT 'PENDING' COMMENT 'เก็บสถานะข้อมูล', 
   `created_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่สร้างข้อมูล',
   `created_by` VARCHAR(255) NOT NULL DEFAULT 'SYSTEM' COMMENT 'เก็บผู้สร้างข้อมูล',
-  `updated_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขล่าสุด',
+  `updated_at` TIMESTAMP(3) NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่แก้ไขล่าสุด',
   `updated_by` VARCHAR(255) NULL COMMENT 'เก็บ id ผู้แก้ไขข้อมูลล่าสุด',
   `status_modified_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขสถานะล่าสุด',
   PRIMARY KEY (`id`),
-  KEY `idx_user_payments_user_id` (`user_id`),
-  CONSTRAINT `fk_user_payments_user_id`
-    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+  KEY `idx_sheet_id` (`sheet_id`),
+  KEY `idx_reporter_id` (`reporter_id`),
+  KEY `idx_status_flag` (`status_flag`),
+  CONSTRAINT `fk_report_sheets_sheet_id`
+    FOREIGN KEY (`sheet_id`) REFERENCES `sheets` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_report_sheets_reporter_id`
+    FOREIGN KEY (`reporter_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB
-  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บประวัติการชำระเงินของผู้ใช้';
+  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูลการรายงานชีต';
+
+CREATE TABLE `report_users` (
+  `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id รายงานผู้ใช้',
+  `user_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ของผู้ใช้ที่ถูกรายงาน',
+  `report_type` ENUM('โปรไฟล์ปลอม', 'การกลั่นแกล้ง การคุกคาม หรือการแสดงความเกลียดชัง', 'เนื้อหาเกี่ยวกับความรุนแรง หรือการทำร้ายตัวเอง', 'การละเมิดทรัพย์สินทางปัญญา', 'เนื้อหาสำหรับผู้ใหญ่', 'อื่นๆ') NOT NULL COMMENT 'ประเภทของรายงาน',
+  `reporter_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ผู้รายงาน',
+  `content` TEXT NULL COMMENT 'เก็บรายละเอียดของรายงาน',
+  `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
+  `status_flag` ENUM('PENDING','REVIEWING','RESOLVED','REJECTED') NOT NULL DEFAULT 'PENDING' COMMENT 'เก็บสถานะข้อมูล', 
+  `created_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่สร้างข้อมูล',
+  `created_by` VARCHAR(255) NOT NULL DEFAULT 'SYSTEM' COMMENT 'เก็บผู้สร้างข้อมูล',
+  `updated_at` TIMESTAMP(3) NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่แก้ไขล่าสุด',
+  `updated_by` VARCHAR(255) NULL COMMENT 'เก็บ id ผู้แก้ไขข้อมูลล่าสุด',
+  `status_modified_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขสถานะล่าสุด',
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_reporter_id` (`reporter_id`),
+  KEY `idx_status_flag` (`status_flag`),
+  CONSTRAINT `fk_report_users_user_id`
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_report_users_reporter_id`
+    FOREIGN KEY (`reporter_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูลการรายงานผู้ใช้';
+
 
 -- ====================
 -- Plans
 -- ====================
 CREATE TABLE `plans` (
   `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ของแพ็กเกจ',
-  `name` VARCHAR(150) NOT NULL COMMENT 'เก็บชื่อแพ็กเกจ (เช่น Pro รายเดือน)',
+  `name` VARCHAR(150) NOT NULL COMMENT 'เก็บชื่อแพ็กเกจ',
   `description` TEXT DEFAULT NULL COMMENT 'เก็บคำอธิบายแพ็กเกจ',
   `price` DECIMAL(10,2) NOT NULL COMMENT 'เก็บราคาของแพ็กเกจ',
   `billing_interval` ENUM('DAY','WEEK','MONTH','YEAR') NOT NULL COMMENT 'เก็บหน่วยของรอบการเก็บเงิน (เช่น เดือน)',
   `billing_interval_count` INT NOT NULL DEFAULT 1 COMMENT 'เก็บจำนวนของหน่วย (เช่น 1 เดือน, 3 เดือน)',
   `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
-  `status_flag` ENUM('PENDING','ACTIVE','INACTIVE','SUSPENDED','TERMINATED') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
+  `status_flag` ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
   `created_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่สร้างข้อมูล',
   `created_by` VARCHAR(255) NOT NULL DEFAULT 'SYSTEM' COMMENT 'เก็บผู้สร้างข้อมูล',
   `updated_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขล่าสุด',
@@ -620,42 +665,84 @@ CREATE TABLE `users_plans` (
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูลการสมัครสมาชิกของผู้ใช้';
 
-CREATE TABLE `wallet_topups` (
-  `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ของรายการเติมเงิน',
-  `amount` DECIMAL(19, 2) NOT NULL DEFAULT 0.00 COMMENT 'เก็บจำนวนเงินที่ต้องการเติม',
-  `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
-  `status_flag` ENUM('ACTIVE','INACTIVE','SUSPENDED','TERMINATED') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
-  `created_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่สร้างข้อมูล',
-  `created_by` VARCHAR(255) NOT NULL DEFAULT 'SYSTEM' COMMENT 'เก็บผู้สร้างข้อมูล',
-  `updated_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขล่าสุด',
-  `updated_by` VARCHAR(255) NULL COMMENT 'เก็บ id ผู้แก้ไขข้อมูลล่าสุด',
-  `status_modified_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขสถานะล่าสุด',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูลรายการเติมเงิน';
+  
 
-CREATE TABLE `users_follows` (
-  `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ของการติดตาม',
-  `follower_id` CHAR(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT 'id ของผู้ที่เป็นคนกดติดตาม (คนเริ่ม)',
-  `following_id` CHAR(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT 'id ของผู้ที่ถูกติดตาม (เจ้าของโปรไฟล์)',
+-- ====================
+-- Payments
+-- ====================
+CREATE TABLE `buy_plans` (
+  `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ประวัติการซื้อแพ็กเกจ',
+  `user_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ผู้ใช้ที่ชำระเงินอ้างถึงในตาราง users',
+  `plan_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id แพ็กเกจที่อ้างถึงในตาราง plans',
+  `payment_method` ENUM('PROMPTPAY') NOT NULL COMMENT 'เก็บช่องทางการชำระเงิน (ตอนนี้เก็บแค่พร้อมเพย์เท่านั้น)',
+  `amount` DECIMAL(10,2) NOT NULL COMMENT 'เก็บจำนวนเงินที่ชำระ',
+  `payment_status` ENUM('PENDING', 'SUCCESSFUL', 'FAILED', 'REFUNDED') NOT NULL DEFAULT 'PENDING' COMMENT 'เก็บสถานะการชำระเงินจาก Gateway',
+  `slip_image_url` TEXT DEFAULT NULL COMMENT 'เก็บ URL ของหลักฐานการชำระเงิน',
   `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
-  `status_flag` ENUM('ACTIVE','INACTIVE','SUSPENDED','TERMINATED') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
+  `status_flag` ENUM('PENDING','ACTIVE','INACTIVE','SUSPENDED','TERMINATED') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
   `created_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่สร้างข้อมูล',
   `created_by` VARCHAR(255) NOT NULL DEFAULT 'SYSTEM' COMMENT 'เก็บผู้สร้างข้อมูล',
   `updated_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขล่าสุด',
   `updated_by` VARCHAR(255) NULL COMMENT 'เก็บ id ผู้แก้ไขข้อมูลล่าสุด',
   `status_modified_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขสถานะล่าสุด',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_follower_following` (`follower_id`, `following_id`),
-  KEY `idx_following_id` (`following_id`), 
-  CONSTRAINT `fk_follows_follower` FOREIGN KEY (`follower_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_follows_following` FOREIGN KEY (`following_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `check_not_self_follow` CHECK (`follower_id` <> `following_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูลการติดตามกันระหว่างผู้ใช้';
+  KEY `idx_buy_plans_user_id` (`user_id`),
+  KEY `idx_buy_plans_plan_id` (`plan_id`),
+  CONSTRAINT `fk_buy_plans_user_id`
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `fk_buy_plans_plan_id`
+    FOREIGN KEY (`plan_id`) REFERENCES `plans` (`id`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บประวัติการซื้อแพ็กเกจ';
 
--- ====================
--- Triggers
--- ====================
-@delimiter $$
+CREATE TABLE `buy_sheets` (
+  `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ประวัติการซื้อเอกสาร',
+  `user_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ผู้ใช้ที่ชำระเงินอ้างถึงในตาราง users',
+  `sheet_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id เอกสารที่อ้างถึงในตาราง sheets',
+  `payment_method` ENUM('PROMPTPAY') NOT NULL COMMENT 'เก็บช่องทางการชำระเงิน (ตอนนี้เก็บแค่พร้อมเพย์เท่านั้น)',
+  `amount` DECIMAL(10,2) NOT NULL COMMENT 'เก็บจำนวนเงินที่ชำระ',
+  `payment_status` ENUM('PENDING', 'SUCCESSFUL', 'FAILED', 'REFUNDED') NOT NULL DEFAULT 'PENDING' COMMENT 'เก็บสถานะการชำระเงินจาก Gateway',
+  `slip_image_url` TEXT DEFAULT NULL COMMENT 'เก็บ URL ของหลักฐานการชำระเงิน',
+  `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
+  `status_flag` ENUM('PENDING','ACTIVE','INACTIVE','SUSPENDED','TERMINATED') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
+  `created_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่สร้างข้อมูล',
+  `created_by` VARCHAR(255) NOT NULL DEFAULT 'SYSTEM' COMMENT 'เก็บผู้สร้างข้อมูล',
+  `updated_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขล่าสุด',
+  `updated_by` VARCHAR(255) NULL COMMENT 'เก็บ id ผู้แก้ไขข้อมูลล่าสุด',
+  `status_modified_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขสถานะล่าสุด',
+  PRIMARY KEY (`id`),
+  KEY `idx_buy_sheets_user_id` (`user_id`),
+  KEY `idx_buy_sheets_sheet_id` (`sheet_id`),
+  CONSTRAINT `fk_buy_sheets_user_id`
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `fk_buy_sheets_sheet_id`
+    FOREIGN KEY (`sheet_id`) REFERENCES `sheets` (`id`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บประวัติการซื้อเอกสาร';
+
+CREATE TABLE `wallet_topups` (
+  `id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ประวัติการเติมเงิน',
+  `user_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL COMMENT 'เก็บ id ผู้ใช้ที่ชำระเงินอ้างถึงในตาราง users',
+  `payment_method` ENUM('PROMPTPAY') NOT NULL COMMENT 'เก็บช่องทางการชำระเงิน (ตอนนี้เก็บแค่พร้อมเพย์เท่านั้น)',
+  `amount` DECIMAL(10,2) NOT NULL COMMENT 'เก็บจำนวนเงินที่ชำระ',
+  `payment_status` ENUM('PENDING', 'SUCCESSFUL', 'FAILED', 'REFUNDED') NOT NULL DEFAULT 'PENDING' COMMENT 'เก็บสถานะการชำระเงินจาก Gateway',
+  `slip_image_url` TEXT DEFAULT NULL COMMENT 'เก็บ URL ของหลักฐานการชำระเงิน',
+  `visible_flag` BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'เก็บสถานะการมองเห็นข้อมูล',
+  `status_flag` ENUM('PENDING','ACTIVE','INACTIVE','SUSPENDED','TERMINATED') NOT NULL DEFAULT 'ACTIVE' COMMENT 'เก็บสถานะข้อมูล',
+  `created_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT 'เก็บวันที่สร้างข้อมูล',
+  `created_by` VARCHAR(255) NOT NULL DEFAULT 'SYSTEM' COMMENT 'เก็บผู้สร้างข้อมูล',
+  `updated_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขล่าสุด',
+  `updated_by` VARCHAR(255) NULL COMMENT 'เก็บ id ผู้แก้ไขข้อมูลล่าสุด',
+  `status_modified_at` TIMESTAMP(3) NULL COMMENT 'เก็บวันที่แก้ไขสถานะล่าสุด',
+  PRIMARY KEY (`id`),
+  KEY `idx_wallet_topups_user_id` (`user_id`),
+  CONSTRAINT `fk_wallet_topups_user_id`
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บประวัติการเติมเงิน';
+
+
+DELIMITER $$
 
 CREATE TRIGGER before_insert_roles
 BEFORE INSERT ON `roles`
@@ -720,6 +807,15 @@ BEGIN
   END IF;
 END$$
 
+CREATE TRIGGER before_insert_sheets
+BEFORE INSERT ON `sheets`
+FOR EACH ROW
+BEGIN
+  IF NEW.`id` IS NULL OR NEW.`id` = '' THEN
+    SET NEW.`id` = UUIDV7();
+  END IF;
+END$$
+
 CREATE TRIGGER before_insert_categories
 BEFORE INSERT ON `categories`
 FOR EACH ROW
@@ -731,33 +827,6 @@ END$$
 
 CREATE TRIGGER before_insert_keywords
 BEFORE INSERT ON `keywords`
-FOR EACH ROW
-BEGIN
-  IF NEW.`id` IS NULL OR NEW.`id` = '' THEN
-    SET NEW.`id` = UUIDV7();
-  END IF;
-END$$
-
-CREATE TRIGGER before_insert_sheets
-BEFORE INSERT ON `sheets`
-FOR EACH ROW
-BEGIN
-  IF NEW.`id` IS NULL OR NEW.`id` = '' THEN
-    SET NEW.`id` = UUIDV7();
-  END IF;
-END$$
-
-CREATE TRIGGER before_insert_sheets_categories
-BEFORE INSERT ON `sheets_categories`
-FOR EACH ROW
-BEGIN
-  IF NEW.`id` IS NULL OR NEW.`id` = '' THEN
-    SET NEW.`id` = UUIDV7();
-  END IF;
-END$$
-
-CREATE TRIGGER before_insert_sheets_keywords
-BEFORE INSERT ON `sheets_keywords`
 FOR EACH ROW
 BEGIN
   IF NEW.`id` IS NULL OR NEW.`id` = '' THEN
@@ -810,6 +879,15 @@ BEGIN
   END IF;
 END$$
 
+CREATE TRIGGER before_insert_sheets_reviews
+BEFORE INSERT ON `sheets_reviews`
+FOR EACH ROW
+BEGIN
+  IF NEW.`id` IS NULL OR NEW.`id` = '' THEN
+    SET NEW.`id` = UUIDV7();
+  END IF;
+END$$
+
 CREATE TRIGGER before_insert_posts
 BEFORE INSERT ON `posts`
 FOR EACH ROW
@@ -819,7 +897,7 @@ BEGIN
   END IF;
 END$$
 
-CREATE TRIGGER before_insert_post_likes
+CREATE TRIGGER before_insert_posts_likes
 BEFORE INSERT ON `posts_likes`
 FOR EACH ROW
 BEGIN
@@ -828,7 +906,7 @@ BEGIN
   END IF;
 END$$
 
-CREATE TRIGGER before_insert_post_comments
+CREATE TRIGGER before_insert_posts_comments
 BEFORE INSERT ON `posts_comments`
 FOR EACH ROW
 BEGIN
@@ -846,8 +924,8 @@ BEGIN
   END IF;
 END$$
 
-CREATE TRIGGER before_insert_users_reports
-BEFORE INSERT ON `users_reports`
+CREATE TRIGGER before_insert_users_follows
+BEFORE INSERT ON `users_follows`
 FOR EACH ROW
 BEGIN
   IF NEW.`id` IS NULL OR NEW.`id` = '' THEN
@@ -855,8 +933,26 @@ BEGIN
   END IF;
 END$$
 
-CREATE TRIGGER before_insert_user_payments
-BEFORE INSERT ON `users_payments`
+CREATE TRIGGER before_insert_report_posts
+BEFORE INSERT ON `report_posts`
+FOR EACH ROW
+BEGIN
+  IF NEW.`id` IS NULL OR NEW.`id` = '' THEN
+    SET NEW.`id` = UUIDV7();
+  END IF;
+END$$
+
+CREATE TRIGGER before_insert_report_sheets
+BEFORE INSERT ON `report_sheets`
+FOR EACH ROW
+BEGIN
+  IF NEW.`id` IS NULL OR NEW.`id` = '' THEN
+    SET NEW.`id` = UUIDV7();
+  END IF;
+END$$
+
+CREATE TRIGGER before_insert_report_users
+BEFORE INSERT ON `report_users`
 FOR EACH ROW
 BEGIN
   IF NEW.`id` IS NULL OR NEW.`id` = '' THEN
@@ -882,8 +978,8 @@ BEGIN
   END IF;
 END$$
 
-CREATE TRIGGER before_insert_users_follows
-BEFORE INSERT ON `users_follows`
+CREATE TRIGGER before_insert_buy_plans
+BEFORE INSERT ON `buy_plans`
 FOR EACH ROW
 BEGIN
   IF NEW.`id` IS NULL OR NEW.`id` = '' THEN
@@ -891,4 +987,23 @@ BEGIN
   END IF;
 END$$
 
-@delimiter ;
+CREATE TRIGGER before_insert_buy_sheets
+BEFORE INSERT ON `buy_sheets`
+FOR EACH ROW
+BEGIN
+  IF NEW.`id` IS NULL OR NEW.`id` = '' THEN
+    SET NEW.`id` = UUIDV7();
+  END IF;
+END$$
+
+CREATE TRIGGER before_insert_wallet_topups
+BEFORE INSERT ON `wallet_topups`
+FOR EACH ROW
+BEGIN
+  IF NEW.`id` IS NULL OR NEW.`id` = '' THEN
+    SET NEW.`id` = UUIDV7();
+  END IF;
+END$$
+
+DELIMITER ;
+SET FOREIGN_KEY_CHECKS = 1;

@@ -32,8 +32,8 @@ export const mapping = {
     try {
       return {
         id: data.id,
+        sheet_id: data.sheet_id,
         name: data.name,
-        usage_count: data.usage_count,
         flag: {
           visible_flag: data.visible_flag,
           status_flag: data.status_flag,

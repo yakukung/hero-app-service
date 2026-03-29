@@ -49,6 +49,16 @@ export const Sessions = sequelize.define(
   {
     tableName: "sessions",
     timestamps: false,
-  }
+    indexes: [
+      {
+        name: "unique_refresh_token",
+        unique: true,
+        fields: ["refresh_token"],
+      },
+      {
+        name: "idx_sessions_user_id",
+        fields: ["user_id"],
+      },
+    ],
+  },
 );
-

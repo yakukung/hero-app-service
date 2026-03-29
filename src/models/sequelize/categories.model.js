@@ -1,7 +1,10 @@
 import { DataTypes } from "sequelize";
 import { v7 as uuidv7 } from "uuid";
 import { sequelize } from "../../configs/sequelize.configs.js";
-import { STATUS_FLAG } from "../../constants/status_flag.constants.js";
+import {
+  ACTIVE_INACTIVE_STATUS,
+  CATEGORY_ENUM_VALUES,
+} from "../../constants/db_schema.constants.js";
 
 export const Categories = sequelize.define(
   "categories",
@@ -12,10 +15,17 @@ export const Categories = sequelize.define(
       primaryKey: true,
       defaultValue: () => uuidv7(),
     },
-    name: {
-      type: DataTypes.STRING(150),
+    sheet_id: {
+      type: DataTypes.UUID,
       allowNull: false,
-      unique: true,
+      references: {
+        model: "sheets",
+        key: "id",
+      },
+    },
+    name: {
+      type: DataTypes.ENUM(...CATEGORY_ENUM_VALUES),
+      allowNull: false,
     },
     visible_flag: {
       type: DataTypes.BOOLEAN,
@@ -23,10 +33,9 @@ export const Categories = sequelize.define(
       defaultValue: true,
     },
     status_flag: {
-      type: DataTypes.ENUM,
-      values: Object.values(STATUS_FLAG),
+      type: DataTypes.ENUM(...ACTIVE_INACTIVE_STATUS),
       allowNull: false,
-      defaultValue: STATUS_FLAG.ACTIVE,
+      defaultValue: "ACTIVE",
     },
     created_at: {
       type: DataTypes.DATE(3),
@@ -50,11 +59,19 @@ export const Categories = sequelize.define(
       type: DataTypes.DATE(3),
       allowNull: true,
     },
-
   },
   {
     tableName: "categories",
     timestamps: false,
-  }
+    indexes: [
+      {
+        name: "idx_categories_sheet_id",
+        fields: ["sheet_id"],
+      },
+      {
+        name: "idx_categories_name",
+        fields: ["name"],
+      },
+    ],
+  },
 );
-

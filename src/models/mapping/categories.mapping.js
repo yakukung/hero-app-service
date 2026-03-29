@@ -32,6 +32,7 @@ export const mapping = {
     try {
       return {
         id: data.id,
+        sheet_id: data.sheet_id,
         name: data.name,
         flag: {
           visible_flag: data.visible_flag,

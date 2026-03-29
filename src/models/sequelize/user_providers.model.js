@@ -1,7 +1,7 @@
 import { DataTypes } from "sequelize";
 import { v7 as uuidv7 } from "uuid";
 import { sequelize } from "../../configs/sequelize.configs.js";
-import { STATUS_FLAG } from "../../constants/status_flag.constants.js";
+import { ACCOUNT_STATUS } from "../../constants/db_schema.constants.js";
 
 export const UserProviders = sequelize.define(
   "user_providers",
@@ -23,7 +23,6 @@ export const UserProviders = sequelize.define(
     provider_user_id: {
       type: DataTypes.STRING(255),
       allowNull: false,
-      unique: true,
     },
     provider_name: {
       type: DataTypes.ENUM("GOOGLE"),
@@ -43,10 +42,9 @@ export const UserProviders = sequelize.define(
       defaultValue: true,
     },
     status_flag: {
-      type: DataTypes.ENUM,
-      values: Object.values(STATUS_FLAG),
+      type: DataTypes.ENUM(...ACCOUNT_STATUS),
       allowNull: false,
-      defaultValue: STATUS_FLAG.ACTIVE,
+      defaultValue: "ACTIVE",
     },
     created_at: {
       type: DataTypes.DATE(3),
@@ -70,12 +68,16 @@ export const UserProviders = sequelize.define(
       type: DataTypes.DATE(3),
       allowNull: true,
     },
-
   },
   {
     tableName: "user_providers",
     timestamps: false,
     indexes: [
+      {
+        name: "unique_provider_user_id",
+        unique: true,
+        fields: ["provider_user_id"],
+      },
       {
         name: "unique_user_provider",
         unique: true,
@@ -84,4 +86,3 @@ export const UserProviders = sequelize.define(
     ],
   }
 );
-

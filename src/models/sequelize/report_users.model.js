@@ -1,10 +1,13 @@
 import { DataTypes } from "sequelize";
 import { v7 as uuidv7 } from "uuid";
 import { sequelize } from "../../configs/sequelize.configs.js";
-import { STATUS_FLAG } from "../../constants/status_flag.constants.js";
+import {
+  REPORT_STATUS,
+  REPORT_USER_TYPES,
+} from "../../constants/db_schema.constants.js";
 
-export const SheetsKeywords = sequelize.define(
-  "sheets_keywords",
+export const ReportUsers = sequelize.define(
+  "report_users",
   {
     id: {
       type: DataTypes.UUID,
@@ -12,21 +15,29 @@ export const SheetsKeywords = sequelize.define(
       primaryKey: true,
       defaultValue: () => uuidv7(),
     },
-    sheet_id: {
+    user_id: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
-        model: "sheets",
+        model: "users",
         key: "id",
       },
     },
-    keyword_id: {
+    report_type: {
+      type: DataTypes.ENUM(...REPORT_USER_TYPES),
+      allowNull: false,
+    },
+    reporter_id: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
-        model: "keywords",
+        model: "users",
         key: "id",
       },
+    },
+    content: {
+      type: DataTypes.TEXT,
+      allowNull: true,
     },
     visible_flag: {
       type: DataTypes.BOOLEAN,
@@ -34,10 +45,9 @@ export const SheetsKeywords = sequelize.define(
       defaultValue: true,
     },
     status_flag: {
-      type: DataTypes.ENUM,
-      values: Object.values(STATUS_FLAG),
+      type: DataTypes.ENUM(...REPORT_STATUS),
       allowNull: false,
-      defaultValue: STATUS_FLAG.ACTIVE,
+      defaultValue: "PENDING",
     },
     created_at: {
       type: DataTypes.DATE(3),
@@ -61,22 +71,23 @@ export const SheetsKeywords = sequelize.define(
       type: DataTypes.DATE(3),
       allowNull: true,
     },
-
   },
   {
-    tableName: "sheets_keywords",
+    tableName: "report_users",
     timestamps: false,
     indexes: [
       {
-        name: "unique_sheet_keyword",
-        unique: true,
-        fields: ["sheet_id", "keyword_id"],
+        name: "idx_user_id",
+        fields: ["user_id"],
       },
       {
-        name: "idx_sheets_keywords_keyword_id",
-        fields: ["keyword_id"],
+        name: "idx_reporter_id",
+        fields: ["reporter_id"],
+      },
+      {
+        name: "idx_status_flag",
+        fields: ["status_flag"],
       },
     ],
-  }
+  },
 );
-

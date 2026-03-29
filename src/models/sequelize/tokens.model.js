@@ -22,7 +22,6 @@ export const Tokens = sequelize.define(
     access_token: {
       type: DataTypes.STRING(512),
       allowNull: false,
-      unique: true,
     },
     issued_at: {
       type: DataTypes.DATE(3),
@@ -42,5 +41,16 @@ export const Tokens = sequelize.define(
   {
     tableName: "tokens",
     timestamps: false,
-  }
+    indexes: [
+      {
+        name: "unique_access_token",
+        unique: true,
+        fields: ["access_token"],
+      },
+      {
+        name: "idx_tokens_session_id",
+        fields: ["session_id"],
+      },
+    ],
+  },
 );
