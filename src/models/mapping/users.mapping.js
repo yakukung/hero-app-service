@@ -27,6 +27,9 @@ export const mapping = {
         profile_image: data.profile_image,
         auth_provider: data.auth_provider,
         role_id: data.role_id,
+        point: data.point,
+        keyword: data.keyword,
+        total_wallet: data.total_wallet,
         flag: {
           visible_flag: data.visible_flag,
           status_flag: data.status_flag,
@@ -62,6 +65,8 @@ export const mapping = {
         auth_provider: data.result.auth_provider,
         roles: role,
         point: data.result.point,
+        keyword: data.result.keyword,
+        total_wallet: data.result.total_wallet,
         tokens: data.accessToken
           ? {
               access_token: data.accessToken,

@@ -1,7 +1,7 @@
 import { DataTypes } from "sequelize";
 import { v7 as uuidv7 } from "uuid";
 import { sequelize } from "../../configs/sequelize.configs.js";
-import { STATUS_FLAG } from "../../constants/status_flag.constants.js";
+import { ACTIVE_INACTIVE_STATUS } from "../../constants/db_schema.constants.js";
 
 export const Sheets = sequelize.define(
   "sheets",
@@ -43,10 +43,9 @@ export const Sheets = sequelize.define(
       defaultValue: true,
     },
     status_flag: {
-      type: DataTypes.ENUM,
-      values: Object.values(STATUS_FLAG),
+      type: DataTypes.ENUM(...ACTIVE_INACTIVE_STATUS),
       allowNull: false,
-      defaultValue: STATUS_FLAG.ACTIVE,
+      defaultValue: "ACTIVE",
     },
     created_at: {
       type: DataTypes.DATE(3),
@@ -70,11 +69,27 @@ export const Sheets = sequelize.define(
       type: DataTypes.DATE(3),
       allowNull: true,
     },
-
   },
   {
     tableName: "sheets",
     timestamps: false,
-  }
+    indexes: [
+      {
+        name: "idx_sheets_author_id",
+        fields: ["author_id"],
+      },
+      {
+        name: "idx_sheets_status_flag",
+        fields: ["status_flag"],
+      },
+      {
+        name: "idx_sheets_rating",
+        fields: ["rating"],
+      },
+      {
+        name: "idx_sheets_price",
+        fields: ["price"],
+      },
+    ],
+  },
 );
-

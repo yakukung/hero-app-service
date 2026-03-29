@@ -1,7 +1,7 @@
 import { DataTypes } from "sequelize";
 import { v7 as uuidv7 } from "uuid";
 import { sequelize } from "../../configs/sequelize.configs.js";
-import { STATUS_FLAG } from "../../constants/status_flag.constants.js";
+import { ACTIVE_INACTIVE_STATUS } from "../../constants/db_schema.constants.js";
 
 export const SheetsAnswers = sequelize.define(
   "sheets_answers",
@@ -40,15 +40,9 @@ export const SheetsAnswers = sequelize.define(
       defaultValue: true,
     },
     status_flag: {
-      type: DataTypes.ENUM,
-      values: Object.values(STATUS_FLAG),
+      type: DataTypes.ENUM(...ACTIVE_INACTIVE_STATUS),
       allowNull: false,
-      defaultValue: STATUS_FLAG.ACTIVE,
-    },
-    created_at: {
-      type: DataTypes.DATE(3),
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
+      defaultValue: "ACTIVE",
     },
     created_by: {
       type: DataTypes.STRING(255),
@@ -67,7 +61,6 @@ export const SheetsAnswers = sequelize.define(
       type: DataTypes.DATE(3),
       allowNull: true,
     },
-
   },
   {
     tableName: "sheets_answers",
@@ -80,4 +73,3 @@ export const SheetsAnswers = sequelize.define(
     ],
   }
 );
-

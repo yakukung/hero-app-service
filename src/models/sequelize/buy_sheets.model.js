@@ -1,13 +1,14 @@
 import { DataTypes } from "sequelize";
 import { v7 as uuidv7 } from "uuid";
 import { sequelize } from "../../configs/sequelize.configs.js";
-import { STATUS_FLAG } from "../../constants/status_flag.constants.js";
+import {
+  ACCOUNT_STATUS,
+  PAYMENT_METHODS,
+  PAYMENT_STATUS,
+} from "../../constants/db_schema.constants.js";
 
-const PAYMENT_METHODS = ["PROMPTPAY"];
-const PAYMENT_STATUS = ["PENDING", "SUCCESSFUL", "FAILED", "REFUNDED"];
-
-export const UsersPayments = sequelize.define(
-  "users_payments",
+export const BuySheets = sequelize.define(
+  "buy_sheets",
   {
     id: {
       type: DataTypes.UUID,
@@ -23,17 +24,16 @@ export const UsersPayments = sequelize.define(
         key: "id",
       },
     },
-    reference_id: {
+    sheet_id: {
       type: DataTypes.UUID,
       allowNull: false,
-    },
-    reference_table: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
+      references: {
+        model: "sheets",
+        key: "id",
+      },
     },
     payment_method: {
-      type: DataTypes.ENUM,
-      values: PAYMENT_METHODS,
+      type: DataTypes.ENUM(...PAYMENT_METHODS),
       allowNull: false,
     },
     amount: {
@@ -41,8 +41,7 @@ export const UsersPayments = sequelize.define(
       allowNull: false,
     },
     payment_status: {
-      type: DataTypes.ENUM,
-      values: PAYMENT_STATUS,
+      type: DataTypes.ENUM(...PAYMENT_STATUS),
       allowNull: false,
       defaultValue: "PENDING",
     },
@@ -56,10 +55,9 @@ export const UsersPayments = sequelize.define(
       defaultValue: true,
     },
     status_flag: {
-      type: DataTypes.ENUM,
-      values: Object.values(STATUS_FLAG),
+      type: DataTypes.ENUM(...ACCOUNT_STATUS),
       allowNull: false,
-      defaultValue: STATUS_FLAG.ACTIVE,
+      defaultValue: "ACTIVE",
     },
     created_at: {
       type: DataTypes.DATE(3),
@@ -83,16 +81,19 @@ export const UsersPayments = sequelize.define(
       type: DataTypes.DATE(3),
       allowNull: true,
     },
-
   },
   {
-    tableName: "users_payments",
+    tableName: "buy_sheets",
     timestamps: false,
     indexes: [
       {
-        name: "idx_user_payments_user_id",
+        name: "idx_buy_sheets_user_id",
         fields: ["user_id"],
       },
+      {
+        name: "idx_buy_sheets_sheet_id",
+        fields: ["sheet_id"],
+      },
     ],
-  }
+  },
 );

@@ -1,24 +1,20 @@
 import { DataTypes } from "sequelize";
 import { v7 as uuidv7 } from "uuid";
 import { sequelize } from "../../configs/sequelize.configs.js";
-import { ACTIVE_INACTIVE_STATUS } from "../../constants/db_schema.constants.js";
+import {
+  ACCOUNT_STATUS,
+  PAYMENT_METHODS,
+  PAYMENT_STATUS,
+} from "../../constants/db_schema.constants.js";
 
-export const PostsLikes = sequelize.define(
-  "posts_likes",
+export const WalletTopups = sequelize.define(
+  "wallet_topups",
   {
     id: {
       type: DataTypes.UUID,
       allowNull: false,
       primaryKey: true,
       defaultValue: () => uuidv7(),
-    },
-    post_id: {
-      type: DataTypes.UUID,
-      allowNull: false,
-      references: {
-        model: "posts",
-        key: "id",
-      },
     },
     user_id: {
       type: DataTypes.UUID,
@@ -28,13 +24,30 @@ export const PostsLikes = sequelize.define(
         key: "id",
       },
     },
+    payment_method: {
+      type: DataTypes.ENUM(...PAYMENT_METHODS),
+      allowNull: false,
+    },
+    amount: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+    },
+    payment_status: {
+      type: DataTypes.ENUM(...PAYMENT_STATUS),
+      allowNull: false,
+      defaultValue: "PENDING",
+    },
+    slip_image_url: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
     visible_flag: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: true,
     },
     status_flag: {
-      type: DataTypes.ENUM(...ACTIVE_INACTIVE_STATUS),
+      type: DataTypes.ENUM(...ACCOUNT_STATUS),
       allowNull: false,
       defaultValue: "ACTIVE",
     },
@@ -62,18 +75,13 @@ export const PostsLikes = sequelize.define(
     },
   },
   {
-    tableName: "posts_likes",
+    tableName: "wallet_topups",
     timestamps: false,
     indexes: [
       {
-        name: "unique_user_post_like",
-        unique: true,
-        fields: ["user_id", "post_id"],
-      },
-      {
-        name: "idx_posts_likes_post_id",
-        fields: ["post_id"],
+        name: "idx_wallet_topups_user_id",
+        fields: ["user_id"],
       },
     ],
-  }
+  },
 );

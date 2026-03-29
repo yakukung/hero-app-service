@@ -1,10 +1,13 @@
 import { DataTypes } from "sequelize";
 import { v7 as uuidv7 } from "uuid";
 import { sequelize } from "../../configs/sequelize.configs.js";
-import { STATUS_FLAG } from "../../constants/status_flag.constants.js";
+import {
+  REPORT_POST_SHEET_TYPES,
+  REPORT_STATUS,
+} from "../../constants/db_schema.constants.js";
 
-export const SheetsCategories = sequelize.define(
-  "sheets_categories",
+export const ReportPosts = sequelize.define(
+  "report_posts",
   {
     id: {
       type: DataTypes.UUID,
@@ -12,21 +15,29 @@ export const SheetsCategories = sequelize.define(
       primaryKey: true,
       defaultValue: () => uuidv7(),
     },
-    sheet_id: {
+    post_id: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
-        model: "sheets",
+        model: "posts",
         key: "id",
       },
     },
-    category_id: {
+    report_type: {
+      type: DataTypes.ENUM(...REPORT_POST_SHEET_TYPES),
+      allowNull: false,
+    },
+    reporter_id: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
-        model: "categories",
+        model: "users",
         key: "id",
       },
+    },
+    content: {
+      type: DataTypes.TEXT,
+      allowNull: true,
     },
     visible_flag: {
       type: DataTypes.BOOLEAN,
@@ -34,10 +45,9 @@ export const SheetsCategories = sequelize.define(
       defaultValue: true,
     },
     status_flag: {
-      type: DataTypes.ENUM,
-      values: Object.values(STATUS_FLAG),
+      type: DataTypes.ENUM(...REPORT_STATUS),
       allowNull: false,
-      defaultValue: STATUS_FLAG.ACTIVE,
+      defaultValue: "PENDING",
     },
     created_at: {
       type: DataTypes.DATE(3),
@@ -61,22 +71,23 @@ export const SheetsCategories = sequelize.define(
       type: DataTypes.DATE(3),
       allowNull: true,
     },
-
   },
   {
-    tableName: "sheets_categories",
+    tableName: "report_posts",
     timestamps: false,
     indexes: [
       {
-        name: "unique_sheet_category",
-        unique: true,
-        fields: ["sheet_id", "category_id"],
+        name: "idx_post_id",
+        fields: ["post_id"],
       },
       {
-        name: "idx_sheets_categories_category_id",
-        fields: ["category_id"],
+        name: "idx_reporter_id",
+        fields: ["reporter_id"],
+      },
+      {
+        name: "idx_status_flag",
+        fields: ["status_flag"],
       },
     ],
-  }
+  },
 );
-

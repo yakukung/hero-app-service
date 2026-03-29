@@ -45,7 +45,6 @@ export const mapping = {
         description: data.description,
         rating: data.rating,
         price: data.price,
-        course: data.course,
         flag: {
           visible_flag: data.visible_flag,
           status_flag: data.status_flag,
@@ -100,7 +99,6 @@ export const mapping = {
         description: data.description,
         rating: data.rating,
         price: data.price,
-        course: data.course,
         categories: categories,
         keywords: keywords,
         questions: questions,

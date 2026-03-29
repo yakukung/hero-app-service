@@ -1,7 +1,7 @@
 import { DataTypes } from "sequelize";
 import { v7 as uuidv7 } from "uuid";
 import { sequelize } from "../../configs/sequelize.configs.js";
-import { STATUS_FLAG } from "../../constants/status_flag.constants.js";
+import { ACTIVE_INACTIVE_STATUS } from "../../constants/db_schema.constants.js";
 
 export const Posts = sequelize.define(
   "posts",
@@ -53,10 +53,9 @@ export const Posts = sequelize.define(
       defaultValue: true,
     },
     status_flag: {
-      type: DataTypes.ENUM,
-      values: Object.values(STATUS_FLAG),
+      type: DataTypes.ENUM(...ACTIVE_INACTIVE_STATUS),
       allowNull: false,
-      defaultValue: STATUS_FLAG.ACTIVE,
+      defaultValue: "ACTIVE",
     },
     created_at: {
       type: DataTypes.DATE(3),
@@ -84,5 +83,23 @@ export const Posts = sequelize.define(
   {
     tableName: "posts",
     timestamps: false,
+    indexes: [
+      {
+        name: "idx_posts_sheet_id",
+        fields: ["sheet_id"],
+      },
+      {
+        name: "idx_posts_user_id",
+        fields: ["user_id"],
+      },
+      {
+        name: "idx_posts_status_flag",
+        fields: ["status_flag"],
+      },
+      {
+        name: "idx_posts_created_at",
+        fields: ["created_at"],
+      },
+    ],
   },
 );

@@ -42,7 +42,6 @@ export const mapping = {
           status_modified_at: data.status_modified_at,
         },
         operation: {
-          created_at: data.created_at,
           created_by: data.created_by,
           updated_at: data.updated_at,
           updated_by: data.updated_by,

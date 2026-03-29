@@ -1,7 +1,7 @@
 import { DataTypes } from "sequelize";
 import { v7 as uuidv7 } from "uuid";
 import { sequelize } from "../../configs/sequelize.configs.js";
-import { STATUS_FLAG } from "../../constants/status_flag.constants.js";
+import { ACTIVE_INACTIVE_STATUS } from "../../constants/db_schema.constants.js";
 
 export const UsersSheetsFavorites = sequelize.define(
   "users_sheets_favorites",
@@ -34,10 +34,9 @@ export const UsersSheetsFavorites = sequelize.define(
       defaultValue: true,
     },
     status_flag: {
-      type: DataTypes.ENUM,
-      values: Object.values(STATUS_FLAG),
+      type: DataTypes.ENUM(...ACTIVE_INACTIVE_STATUS),
       allowNull: false,
-      defaultValue: STATUS_FLAG.ACTIVE,
+      defaultValue: "ACTIVE",
     },
     created_at: {
       type: DataTypes.DATE(3),
@@ -61,7 +60,6 @@ export const UsersSheetsFavorites = sequelize.define(
       type: DataTypes.DATE(3),
       allowNull: true,
     },
-
   },
   {
     tableName: "users_sheets_favorites",
@@ -79,4 +77,3 @@ export const UsersSheetsFavorites = sequelize.define(
     ],
   }
 );
-

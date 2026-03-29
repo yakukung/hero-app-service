@@ -1,4 +1,4 @@
-import { ValidationError, Op } from "sequelize";
+import { Op } from "sequelize";
 import { HTTP_STATUS } from "../constants/http_status.constants.js";
 import { STATUS_FLAG } from "../constants/status_flag.constants.js";
 import { models as sequelize } from "../models/sequelize/associations.js";
@@ -64,7 +64,7 @@ export const repository = {
             as: "author",
           },
           {
-            model: sequelize.UsersPayments,
+            model: sequelize.BuySheets,
             as: "payments",
             required: false,
             where: {
@@ -132,7 +132,7 @@ export const repository = {
             as: "author",
           },
           {
-            model: sequelize.UsersPayments,
+            model: sequelize.BuySheets,
             as: "payments",
             required: false,
             where: {
@@ -203,7 +203,7 @@ export const repository = {
             as: "author",
           },
           {
-            model: sequelize.UsersPayments,
+            model: sequelize.BuySheets,
             as: "payments",
             required: false,
             where: {
@@ -261,10 +261,9 @@ export const repository = {
         return responseRepository.setResult(HTTP_STATUS.NOT_FOUND, null);
       }
 
-      const purchasedCount = await sequelize.UsersPayments.count({
+      const purchasedCount = await sequelize.BuySheets.count({
         where: {
-          reference_id: id,
-          reference_table: "sheets",
+          sheet_id: id,
           payment_status: "SUCCESSFUL",
           visible_flag: {
             [Op.ne]: false,
