@@ -90,17 +90,35 @@ export const service = {
   async updateProfileImage(req, res) {
     const transaction = await sequelize.transaction();
     try {
-      const { uid } = req.body;
-      let profile_image = null;
+      const uid = req.user?.id;
+      if (!uid) {
+        await transaction.rollback();
+        return responseTemplates.setUnauthorizedResponse(
+          RESPONSE_MESSAGES.TOKEN_INVALID_INVALID_ERROR,
+        );
+      }
+      if (!req.file) {
+        await transaction.rollback();
+        return responseTemplates.setBadRequestResponse(RESPONSE_MESSAGES.BAD_REQUEST);
+      }
+      let oldProfileImagePath = null;
+      const profile_image = req.file.path;
 
-      if (req.file) {
-        const user = await usersRepository.findById(uid, transaction);
-        if (user.code === HTTP_STATUS.OK.code && user.result.profile_image) {
-          if (fs.existsSync(user.result.profile_image)) {
-            fs.unlinkSync(user.result.profile_image);
-          }
-        }
-        profile_image = req.file.path;
+      const user = await usersRepository.findById(uid, transaction);
+      switch (user.code) {
+        case HTTP_STATUS.OK.code:
+          oldProfileImagePath = user.result.profile_image;
+          break;
+        case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
+          return responseTemplates.setNotFoundResponse(
+            RESPONSE_MESSAGES.DATA_NOT_FOUND,
+          );
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
       }
       const updateResult = await usersRepository.updateProfileImage(
         uid,
@@ -108,14 +126,33 @@ export const service = {
         transaction,
       );
 
-      if (updateResult.code !== HTTP_STATUS.OK.code) {
-        await transaction.rollback();
-        return responseTemplates.setInternalServerErrorResponse(
-          RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
-        );
+      switch (updateResult.code) {
+        case HTTP_STATUS.OK.code:
+          break;
+        case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
+          return responseTemplates.setNotFoundResponse(
+            RESPONSE_MESSAGES.DATA_NOT_FOUND,
+          );
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
       }
 
       await transaction.commit();
+      if (
+        oldProfileImagePath &&
+        oldProfileImagePath !== profile_image &&
+        fs.existsSync(oldProfileImagePath)
+      ) {
+        try {
+          fs.unlinkSync(oldProfileImagePath);
+        } catch (fileError) {
+          console.error(fileError);
+        }
+      }
       return responseTemplates.setNoContentResponse();
     } catch (error) {
       await transaction.rollback();
@@ -129,9 +166,17 @@ export const service = {
   async updateProfile(req, res) {
     const transaction = await sequelize.transaction();
     try {
-      let { uid, username, password } = req.body;
+      const uid = req.user?.id || req.body.uid;
+      if (!uid) {
+        await transaction.rollback();
+        return responseTemplates.setUnauthorizedResponse(
+          RESPONSE_MESSAGES.TOKEN_INVALID_INVALID_ERROR,
+        );
+      }
+      let { username, password } = req.body;
       if (!username) username = undefined;
       if (!password) password = undefined;
+      let oldProfileImagePath = null;
 
       if (password) {
         const salt = await bcrypt.genSalt(10);
@@ -141,10 +186,20 @@ export const service = {
 
       if (req.file) {
         const user = await usersRepository.findById(uid, transaction);
-        if (user.code === HTTP_STATUS.OK.code && user.result.profile_image) {
-          if (fs.existsSync(user.result.profile_image)) {
-            fs.unlinkSync(user.result.profile_image);
-          }
+        switch (user.code) {
+          case HTTP_STATUS.OK.code:
+            oldProfileImagePath = user.result.profile_image;
+            break;
+          case HTTP_STATUS.NOT_FOUND.code:
+            await transaction.rollback();
+            return responseTemplates.setNotFoundResponse(
+              RESPONSE_MESSAGES.DATA_NOT_FOUND,
+            );
+          default:
+            await transaction.rollback();
+            return responseTemplates.setInternalServerErrorResponse(
+              RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+            );
         }
         profile_image = req.file.path;
       }
@@ -156,14 +211,37 @@ export const service = {
         transaction,
       );
 
-      if (updateResult.code !== HTTP_STATUS.OK.code) {
-        await transaction.rollback();
-        return responseTemplates.setInternalServerErrorResponse(
-          RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
-        );
+      switch (updateResult.code) {
+        case HTTP_STATUS.OK.code:
+          break;
+        case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
+          return responseTemplates.setNotFoundResponse(
+            RESPONSE_MESSAGES.DATA_NOT_FOUND,
+          );
+        case HTTP_STATUS.BAD_REQUEST.code:
+          await transaction.rollback();
+          return responseTemplates.setBadRequestResponse(RESPONSE_MESSAGES.BAD_REQUEST);
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
       }
 
       await transaction.commit();
+      if (
+        oldProfileImagePath &&
+        profile_image &&
+        oldProfileImagePath !== profile_image &&
+        fs.existsSync(oldProfileImagePath)
+      ) {
+        try {
+          fs.unlinkSync(oldProfileImagePath);
+        } catch (fileError) {
+          console.error(fileError);
+        }
+      }
       return responseTemplates.setNoContentResponse();
     } catch (error) {
       await transaction.rollback();
@@ -177,7 +255,14 @@ export const service = {
   async updatePassword(req, res) {
     const transaction = await sequelize.transaction();
     try {
-      let { uid, old_password, new_password } = req.body;
+      const uid = req.user?.id;
+      if (!uid) {
+        await transaction.rollback();
+        return responseTemplates.setUnauthorizedResponse(
+          RESPONSE_MESSAGES.TOKEN_INVALID_INVALID_ERROR,
+        );
+      }
+      let { old_password, new_password } = req.body;
 
       const findUserById = await usersRepository.findById(uid, transaction);
       switch (findUserById.code) {
@@ -243,7 +328,14 @@ export const service = {
   async updateUsername(req, res) {
     const transaction = await sequelize.transaction();
     try {
-      let { uid, username } = req.body;
+      const uid = req.user?.id;
+      if (!uid) {
+        await transaction.rollback();
+        return responseTemplates.setUnauthorizedResponse(
+          RESPONSE_MESSAGES.TOKEN_INVALID_INVALID_ERROR,
+        );
+      }
+      let { username } = req.body;
       const findUserByUsername = await usersRepository.findByUsername(
         username,
         transaction,
@@ -297,7 +389,14 @@ export const service = {
   async updateEmail(req, res) {
     const transaction = await sequelize.transaction();
     try {
-      let { uid, email, password } = req.body;
+      const uid = req.user?.id;
+      if (!uid) {
+        await transaction.rollback();
+        return responseTemplates.setUnauthorizedResponse(
+          RESPONSE_MESSAGES.TOKEN_INVALID_INVALID_ERROR,
+        );
+      }
+      let { email, password } = req.body;
 
       const findUserById = await usersRepository.findById(uid, transaction);
       switch (findUserById.code) {
@@ -369,6 +468,12 @@ export const service = {
     try {
       const { id } = req.params;
       const { status_flag } = req.body;
+      if (id !== req.user?.id) {
+        await transaction.rollback();
+        return responseTemplates.setForbiddenResponse(
+          RESPONSE_MESSAGES.AUTHENTICATION_INVALID_ERROR,
+        );
+      }
       const findUserById = await usersRepository.findById(id, transaction);
       switch (findUserById.code) {
         case HTTP_STATUS.OK.code:
@@ -418,6 +523,12 @@ export const service = {
     try {
       const { id } = req.params;
       const { keyword } = req.body;
+      if (id !== req.user?.id) {
+        await transaction.rollback();
+        return responseTemplates.setForbiddenResponse(
+          RESPONSE_MESSAGES.AUTHENTICATION_INVALID_ERROR,
+        );
+      }
       const findUserById = await usersRepository.findById(id, transaction);
       switch (findUserById.code) {
         case HTTP_STATUS.OK.code:
@@ -471,7 +582,7 @@ export const service = {
 
       if (follower_id === id) {
         await transaction.rollback();
-        return responseTemplates.setFailedResponse(RESPONSE_MESSAGES.FAILED);
+        return responseTemplates.setBadRequestResponse(RESPONSE_MESSAGES.BAD_REQUEST);
       }
 
       const findUserById = await usersRepository.findById(id, transaction);
@@ -525,9 +636,9 @@ export const service = {
             following_id: id,
             already_following: true,
           });
-        case HTTP_STATUS.FAILED.code:
+        case HTTP_STATUS.BAD_REQUEST.code:
           await transaction.rollback();
-          return responseTemplates.setFailedResponse(RESPONSE_MESSAGES.FAILED);
+          return responseTemplates.setBadRequestResponse(RESPONSE_MESSAGES.BAD_REQUEST);
         default:
           await transaction.rollback();
           return responseTemplates.setInternalServerErrorResponse(
@@ -556,7 +667,7 @@ export const service = {
 
       if (follower_id === id) {
         await transaction.rollback();
-        return responseTemplates.setFailedResponse(RESPONSE_MESSAGES.FAILED);
+        return responseTemplates.setBadRequestResponse(RESPONSE_MESSAGES.BAD_REQUEST);
       }
 
       const findUserById = await usersRepository.findById(id, transaction);
@@ -602,9 +713,9 @@ export const service = {
         case HTTP_STATUS.NOT_FOUND.code:
           await transaction.rollback();
           return responseTemplates.setNoContentResponse();
-        case HTTP_STATUS.FAILED.code:
+        case HTTP_STATUS.BAD_REQUEST.code:
           await transaction.rollback();
-          return responseTemplates.setFailedResponse(RESPONSE_MESSAGES.FAILED);
+          return responseTemplates.setBadRequestResponse(RESPONSE_MESSAGES.BAD_REQUEST);
         default:
           await transaction.rollback();
           return responseTemplates.setInternalServerErrorResponse(

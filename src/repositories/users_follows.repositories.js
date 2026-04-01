@@ -32,7 +32,7 @@ export const repository = {
       );
 
       if (result === null) {
-        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+        return responseRepository.setResult(HTTP_STATUS.BAD_REQUEST, null);
       }
 
       return responseRepository.setResult(HTTP_STATUS.CREATED, result);
@@ -41,7 +41,7 @@ export const repository = {
         return responseRepository.setResult(HTTP_STATUS.CONFLICT, null);
       }
       if (error?.name === "SequelizeValidationError") {
-        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+        return responseRepository.setResult(HTTP_STATUS.BAD_REQUEST, null);
       }
       console.log(error);
       return responseRepository.setResult(

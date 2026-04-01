@@ -2,6 +2,7 @@ import { DataTypes } from "sequelize";
 import { v7 as uuidv7 } from "uuid";
 import { sequelize } from "../../configs/sequelize.configs.js";
 import {
+  ACTIVE_INACTIVE_STATUS,
   ACCOUNT_STATUS,
   PAYMENT_METHODS,
   PAYMENT_STATUS,
@@ -49,7 +50,7 @@ export const WalletTopups = sequelize.define(
     status_flag: {
       type: DataTypes.ENUM(...ACCOUNT_STATUS),
       allowNull: false,
-      defaultValue: "ACTIVE",
+      defaultValue: ACTIVE_INACTIVE_STATUS.ACTIVE,
     },
     created_at: {
       type: DataTypes.DATE(3),

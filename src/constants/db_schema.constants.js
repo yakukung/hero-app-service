@@ -1,4 +1,9 @@
-export const ACTIVE_INACTIVE_STATUS = ["ACTIVE", "INACTIVE"];
+export const ACTIVE_INACTIVE_STATUS = Object.freeze(
+  Object.assign(["ACTIVE", "INACTIVE"], {
+    ACTIVE: "ACTIVE",
+    INACTIVE: "INACTIVE",
+  }),
+);
 
 export const ACCOUNT_STATUS = [
   "PENDING",

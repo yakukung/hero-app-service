@@ -117,7 +117,7 @@ export const repository = {
       const result = await sequelize.Posts.create(data, { transaction });
 
       if (!result) {
-        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+        return responseRepository.setResult(HTTP_STATUS.BAD_REQUEST, null);
       }
 
       return responseRepository.setResult(
@@ -161,7 +161,7 @@ export const repository = {
       });
 
       if (!result) {
-        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+        return responseRepository.setResult(HTTP_STATUS.BAD_REQUEST, null);
       }
 
       const updatePost = await sequelize.Posts.update(
@@ -170,7 +170,7 @@ export const repository = {
       );
 
       if (!updatePost) {
-        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+        return responseRepository.setResult(HTTP_STATUS.BAD_REQUEST, null);
       }
 
       return responseRepository.setResult(
@@ -203,7 +203,7 @@ export const repository = {
       );
 
       if (!updatePost) {
-        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+        return responseRepository.setResult(HTTP_STATUS.BAD_REQUEST, null);
       }
 
       return responseRepository.setResult(HTTP_STATUS.OK, null);
@@ -253,7 +253,7 @@ export const repository = {
       });
 
       if (!result) {
-        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+        return responseRepository.setResult(HTTP_STATUS.BAD_REQUEST, null);
       }
 
       const updatePost = await sequelize.Posts.update(
@@ -262,7 +262,7 @@ export const repository = {
       );
 
       if (!updatePost) {
-        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+        return responseRepository.setResult(HTTP_STATUS.BAD_REQUEST, null);
       }
 
       const withUser = await sequelize.PostsComments.findOne({
@@ -289,10 +289,14 @@ export const repository = {
       );
     }
   },
-  async removeComment(commentId, postId, transaction) {
+  async removeComment(commentId, postId, userId, transaction) {
     try {
+      const where = { id: commentId, post_id: postId };
+      if (userId) {
+        where.user_id = userId;
+      }
       const result = await sequelize.PostsComments.destroy({
-        where: { id: commentId, post_id: postId },
+        where,
         transaction,
       });
 
@@ -306,7 +310,7 @@ export const repository = {
       );
 
       if (!updatePost) {
-        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+        return responseRepository.setResult(HTTP_STATUS.BAD_REQUEST, null);
       }
 
       return responseRepository.setResult(HTTP_STATUS.OK, null);
@@ -345,7 +349,7 @@ export const repository = {
       });
 
       if (!result) {
-        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+        return responseRepository.setResult(HTTP_STATUS.BAD_REQUEST, null);
       }
 
       const updatePost = await sequelize.Posts.update(
@@ -354,7 +358,7 @@ export const repository = {
       );
 
       if (!updatePost) {
-        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+        return responseRepository.setResult(HTTP_STATUS.BAD_REQUEST, null);
       }
 
       return responseRepository.setResult(

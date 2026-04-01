@@ -11,9 +11,9 @@ export const HTTP_STATUS = Object.freeze({
     code: 204,
     message: "NO_CONTENT",
   },
-  FAILED: {
+  BAD_REQUEST: {
     code: 400,
-    message: "FAILED",
+    message: "BAD_REQUEST",
   },
   NOT_FOUND: {
     code: 404,

@@ -12,7 +12,6 @@ const env = Object.freeze({
   DB_HOST: process.env.DB_HOST,
   DB_PORT: process.env.DB_PORT,
   DB_TYPE: process.env.DB_TYPE,
-  PORT: process.env.PORT,
   CREATED_BY_DEFAULT: process.env.CREATED_BY_DEFAULT,
   UPDATED_BY_DEFAULT: process.env.UPDATED_BY_DEFAULT,
 })

@@ -40,6 +40,7 @@ export const sendVerificationEmail = async (email, userId, base_url) => {
     return info;
   } catch (error) {
     console.error("Error sending email:", error);
+    throw error;
   }
 };
 
@@ -70,5 +71,6 @@ export const sendResetPasswordEmail = async (email, resetLink) => {
     return info;
   } catch (error) {
     console.error("Error sending email:", error);
+    throw error;
   }
 };

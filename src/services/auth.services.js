@@ -16,8 +16,6 @@ import { repository as userProvidersRepository } from "../repositories/user_prov
 import {
   generateAccessToken,
   generateRefreshToken,
-  verifyAccessToken,
-  verifyRefreshToken,
 } from "../utils/jwt.utils.js";
 import {
   accessTokenExpireMs,
@@ -31,6 +29,10 @@ import {
 export const service = {
   async register(req, res) {
     const transaction = await sequelize.transaction();
+    const rollbackAndReturn = async (response) => {
+      await transaction.rollback();
+      return response;
+    };
     try {
       const { username, email, password, confirmPassword, base_url } = req.body;
 
@@ -40,14 +42,18 @@ export const service = {
       );
       switch (existingEmail.code) {
         case HTTP_STATUS.OK.code:
-          return responseTemplates.setConflictResponse(
-            RESPONSE_MESSAGES.EMAIL_ALREADY_ERROR,
+          return rollbackAndReturn(
+            responseTemplates.setConflictResponse(
+              RESPONSE_MESSAGES.EMAIL_ALREADY_ERROR,
+            ),
           );
         case HTTP_STATUS.NOT_FOUND.code:
           break;
         default:
-          return responseTemplates.setInternalServerErrorResponse(
-            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          return rollbackAndReturn(
+            responseTemplates.setInternalServerErrorResponse(
+              RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+            ),
           );
       }
       const existingUsername = await usersRepository.findByUsername(
@@ -56,19 +62,25 @@ export const service = {
       );
       switch (existingUsername.code) {
         case HTTP_STATUS.OK.code:
-          return responseTemplates.setConflictResponse(
-            RESPONSE_MESSAGES.USERNAME_ALREADY_ERROR,
+          return rollbackAndReturn(
+            responseTemplates.setConflictResponse(
+              RESPONSE_MESSAGES.USERNAME_ALREADY_ERROR,
+            ),
           );
         case HTTP_STATUS.NOT_FOUND.code:
           break;
         default:
-          return responseTemplates.setInternalServerErrorResponse(
-            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          return rollbackAndReturn(
+            responseTemplates.setInternalServerErrorResponse(
+              RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+            ),
           );
       }
       if (password !== confirmPassword) {
-        return responseTemplates.setFailedResponse(
-          RESPONSE_MESSAGES.PASSWORD_NOT_MATCH_ERROR,
+        return rollbackAndReturn(
+          responseTemplates.setBadRequestResponse(
+            RESPONSE_MESSAGES.PASSWORD_NOT_MATCH_ERROR,
+          ),
         );
       }
       const findRole = await rolesRepository.findByName(
@@ -79,12 +91,16 @@ export const service = {
         case HTTP_STATUS.OK.code:
           break;
         case HTTP_STATUS.NOT_FOUND.code:
-          return responseTemplates.setNotFoundResponse(
-            RESPONSE_MESSAGES.DATA_NOT_FOUND,
+          return rollbackAndReturn(
+            responseTemplates.setNotFoundResponse(
+              RESPONSE_MESSAGES.DATA_NOT_FOUND,
+            ),
           );
         default:
-          return responseTemplates.setInternalServerErrorResponse(
-            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          return rollbackAndReturn(
+            responseTemplates.setInternalServerErrorResponse(
+              RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+            ),
           );
       }
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -98,11 +114,15 @@ export const service = {
       switch (createUser.code) {
         case HTTP_STATUS.CREATED.code:
           break;
-        case HTTP_STATUS.FAILED.code:
-          return responseTemplates.setFailedResponse(RESPONSE_MESSAGES.FAILED);
+        case HTTP_STATUS.BAD_REQUEST.code:
+          return rollbackAndReturn(
+            responseTemplates.setBadRequestResponse(RESPONSE_MESSAGES.BAD_REQUEST),
+          );
         default:
-          return responseTemplates.setInternalServerErrorResponse(
-            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          return rollbackAndReturn(
+            responseTemplates.setInternalServerErrorResponse(
+              RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+            ),
           );
       }
       const findUserById = await usersRepository.findById(
@@ -114,12 +134,16 @@ export const service = {
           await sendVerificationEmail(email, findUserById.result.id, base_url);
           break;
         case HTTP_STATUS.NOT_FOUND.code:
-          return responseTemplates.setNotFoundResponse(
-            RESPONSE_MESSAGES.DATA_NOT_FOUND,
+          return rollbackAndReturn(
+            responseTemplates.setNotFoundResponse(
+              RESPONSE_MESSAGES.DATA_NOT_FOUND,
+            ),
           );
         default:
-          return responseTemplates.setInternalServerErrorResponse(
-            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          return rollbackAndReturn(
+            responseTemplates.setInternalServerErrorResponse(
+              RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+            ),
           );
       }
       await transaction.commit();
@@ -136,6 +160,10 @@ export const service = {
 
   async verify(req, res) {
     const transaction = await sequelize.transaction();
+    const rollbackAndReturn = async (response) => {
+      await transaction.rollback();
+      return response;
+    };
     try {
       const user_id = req.params.user_id;
       const findUserById = await usersRepository.findById(user_id, transaction);
@@ -143,12 +171,16 @@ export const service = {
         case HTTP_STATUS.OK.code:
           break;
         case HTTP_STATUS.NOT_FOUND.code:
-          return responseTemplates.setNotFoundResponse(
-            RESPONSE_MESSAGES.DATA_NOT_FOUND,
+          return rollbackAndReturn(
+            responseTemplates.setNotFoundResponse(
+              RESPONSE_MESSAGES.DATA_NOT_FOUND,
+            ),
           );
         default:
-          return responseTemplates.setInternalServerErrorResponse(
-            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          return rollbackAndReturn(
+            responseTemplates.setInternalServerErrorResponse(
+              RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+            ),
           );
       }
       const updateStatusUser = await usersRepository.updateStatusUser(
@@ -159,12 +191,16 @@ export const service = {
         case HTTP_STATUS.OK.code:
           break;
         case HTTP_STATUS.NOT_FOUND.code:
-          return responseTemplates.setNotFoundResponse(
-            RESPONSE_MESSAGES.DATA_NOT_FOUND,
+          return rollbackAndReturn(
+            responseTemplates.setNotFoundResponse(
+              RESPONSE_MESSAGES.DATA_NOT_FOUND,
+            ),
           );
         default:
-          return responseTemplates.setInternalServerErrorResponse(
-            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          return rollbackAndReturn(
+            responseTemplates.setInternalServerErrorResponse(
+              RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+            ),
           );
       }
       await transaction.commit();
@@ -251,6 +287,7 @@ export const service = {
                 RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
               );
           }
+          break;
         case STATUS_FLAG.SUSPENDED:
           await transaction.rollback();
           return responseTemplates.setUnauthorizedResponse(
@@ -275,14 +312,34 @@ export const service = {
         user.id,
         req.useragent,
         refreshTokenExpireMs(),
+        transaction,
       );
+      switch (createSession.code) {
+        case HTTP_STATUS.CREATED.code:
+          break;
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
+      }
 
       const sessionId = createSession.result.id;
-      await tokensRepository.createToken(
+      const createToken = await tokensRepository.createToken(
         accessToken,
         sessionId,
         accessTokenExpireMs(),
+        transaction,
       );
+      switch (createToken.code) {
+        case HTTP_STATUS.CREATED.code:
+          break;
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
+      }
 
       const result = await usersRepository.findById(user.id, transaction);
       switch (result.code) {
@@ -350,16 +407,24 @@ export const service = {
           switch (findRole.code) {
             case HTTP_STATUS.OK.code:
               break;
-            default:
+            case HTTP_STATUS.NOT_FOUND.code:
               await transaction.rollback();
               return responseTemplates.setNotFoundResponse(
                 RESPONSE_MESSAGES.DATA_NOT_FOUND,
+              );
+            default:
+              await transaction.rollback();
+              return responseTemplates.setInternalServerErrorResponse(
+                RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
               );
           }
 
           let randomUsername = "";
           let isUnique = false;
-          while (!isUnique) {
+          let usernameAttempts = 0;
+          const MAX_USERNAME_ATTEMPTS = 20;
+          while (!isUnique && usernameAttempts < MAX_USERNAME_ATTEMPTS) {
+            usernameAttempts += 1;
             const emailPrefix = provider_email.split("@")[0].substring(0, 20);
             const randomSuffix = crypto.randomBytes(4).toString("hex");
             randomUsername = `${emailPrefix}_${randomSuffix}`;
@@ -368,9 +433,24 @@ export const service = {
               randomUsername,
               transaction,
             );
-            if (checkUsername.code === HTTP_STATUS.NOT_FOUND.code) {
-              isUnique = true;
+            switch (checkUsername.code) {
+              case HTTP_STATUS.NOT_FOUND.code:
+                isUnique = true;
+                break;
+              case HTTP_STATUS.OK.code:
+                break;
+              default:
+                await transaction.rollback();
+                return responseTemplates.setInternalServerErrorResponse(
+                  RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+                );
             }
+          }
+          if (!isUnique) {
+            await transaction.rollback();
+            return responseTemplates.setInternalServerErrorResponse(
+              RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+            );
           }
 
           const createUser = await usersRepository.createUserByProvider(
@@ -388,8 +468,8 @@ export const service = {
               break;
             default:
               await transaction.rollback();
-              return responseTemplates.setFailedResponse(
-                RESPONSE_MESSAGES.FAILED,
+              return responseTemplates.setBadRequestResponse(
+                RESPONSE_MESSAGES.BAD_REQUEST,
               );
           }
 
@@ -408,8 +488,8 @@ export const service = {
               break;
             default:
               await transaction.rollback();
-              return responseTemplates.setFailedResponse(
-                RESPONSE_MESSAGES.FAILED,
+              return responseTemplates.setBadRequestResponse(
+                RESPONSE_MESSAGES.BAD_REQUEST,
               );
           }
           break;
@@ -445,6 +525,7 @@ export const service = {
                 RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
               );
           }
+          break;
         case STATUS_FLAG.SUSPENDED:
           await transaction.rollback();
           return responseTemplates.setUnauthorizedResponse(
@@ -471,16 +552,48 @@ export const service = {
         refreshTokenExpireMs(),
         transaction,
       );
+      switch (createSession.code) {
+        case HTTP_STATUS.CREATED.code:
+          break;
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
+      }
 
       const sessionId = createSession.result.id;
-      await tokensRepository.createToken(
+      const createToken = await tokensRepository.createToken(
         accessToken,
         sessionId,
         accessTokenExpireMs(),
         transaction,
       );
+      switch (createToken.code) {
+        case HTTP_STATUS.CREATED.code:
+          break;
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
+      }
 
       const result = await usersRepository.findById(user.id, transaction);
+      switch (result.code) {
+        case HTTP_STATUS.OK.code:
+          break;
+        case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
+          return responseTemplates.setNotFoundResponse(
+            RESPONSE_MESSAGES.DATA_NOT_FOUND,
+          );
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
+      }
 
       const data = {
         result: result.result,
@@ -495,6 +608,7 @@ export const service = {
       return responseTemplates.setOKResponse(mapData);
     } catch (error) {
       await transaction.rollback();
+      console.error(error);
       return responseTemplates.setInternalServerErrorResponse(
         RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
       );
@@ -564,12 +678,12 @@ export const service = {
 
       if (!token || !new_password) {
         await transaction.rollback();
-        return responseTemplates.setFailedResponse(RESPONSE_MESSAGES.FAILED);
+        return responseTemplates.setBadRequestResponse(RESPONSE_MESSAGES.BAD_REQUEST);
       }
 
       if (confirmPassword && new_password !== confirmPassword) {
         await transaction.rollback();
-        return responseTemplates.setFailedResponse(
+        return responseTemplates.setBadRequestResponse(
           RESPONSE_MESSAGES.PASSWORD_NOT_MATCH_ERROR,
         );
       }

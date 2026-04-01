@@ -84,34 +84,32 @@ export const UsersFollows = sequelize.define(
       },
     },
     hooks: {
-      beforeUpdate: (instance) => {
-        // console.log("🚀 ~ beforeUpdate:", instance);
-      },
-
       beforeBulkUpdate: (instance) => {
+        const addField = (field) => {
+          if (!instance.fields.includes(field)) {
+            instance.fields.push(field);
+          }
+        };
+        const visibleStatuses = [STATUS_FLAG.ACTIVE, STATUS_FLAG.INACTIVE];
+
         instance.attributes.updated_at = new Date();
-        instance.fields.push("updated_at");
+        addField("updated_at");
         if (!instance.attributes.updated_by) {
           instance.attributes.updated_by = instance.user?.id || "SYSTEM";
-          instance.fields.push("updated_by");
+          addField("updated_by");
         }
 
         if (instance.attributes.status_flag) {
-          if (
-            instance.attributes.status_flag.includes(
-              STATUS_FLAG.ACTIVE,
-              STATUS_FLAG.INACTIVE,
-            )
-          ) {
+          if (visibleStatuses.includes(instance.attributes.status_flag)) {
             instance.attributes.visible_flag = true;
-            instance.fields.push("visible_flag");
+            addField("visible_flag");
             instance.attributes.status_modified_at = new Date();
-            instance.fields.push("status_modified_at");
+            addField("status_modified_at");
           } else {
             instance.attributes.visible_flag = false;
-            instance.fields.push("visible_flag");
+            addField("visible_flag");
             instance.attributes.status_modified_at = new Date();
-            instance.fields.push("status_modified_at");
+            addField("status_modified_at");
           }
         }
       },
