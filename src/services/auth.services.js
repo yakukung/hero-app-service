@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import { generateInitialsAvatar } from "../utils/avatar.utils.js";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { sequelize } from "../configs/sequelize.configs.js";
@@ -109,6 +110,7 @@ export const service = {
         email,
         hashedPassword,
         findRole.result.id,
+        null,
         transaction,
       );
       switch (createUser.code) {
@@ -116,7 +118,9 @@ export const service = {
           break;
         case HTTP_STATUS.BAD_REQUEST.code:
           return rollbackAndReturn(
-            responseTemplates.setBadRequestResponse(RESPONSE_MESSAGES.BAD_REQUEST),
+            responseTemplates.setBadRequestResponse(
+              RESPONSE_MESSAGES.BAD_REQUEST,
+            ),
           );
         default:
           return rollbackAndReturn(
@@ -125,6 +129,27 @@ export const service = {
             ),
           );
       }
+
+      const profileImagePath = await generateInitialsAvatar(
+        username,
+        createUser.result.id,
+      );
+      const updateAvatar = await usersRepository.updateProfileImage(
+        createUser.result.id,
+        profileImagePath,
+        transaction,
+      );
+      switch (updateAvatar.code) {
+        case HTTP_STATUS.OK.code:
+          break;
+        default:
+          return rollbackAndReturn(
+            responseTemplates.setInternalServerErrorResponse(
+              RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+            ),
+          );
+      }
+
       const findUserById = await usersRepository.findById(
         createUser.result.id,
         transaction,
@@ -678,7 +703,9 @@ export const service = {
 
       if (!token || !new_password) {
         await transaction.rollback();
-        return responseTemplates.setBadRequestResponse(RESPONSE_MESSAGES.BAD_REQUEST);
+        return responseTemplates.setBadRequestResponse(
+          RESPONSE_MESSAGES.BAD_REQUEST,
+        );
       }
 
       if (confirmPassword && new_password !== confirmPassword) {
