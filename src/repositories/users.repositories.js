@@ -128,7 +128,7 @@ export const repository = {
     }
   },
 
-  async createUser(username, email, password, role_id, transaction) {
+  async createUser(username, email, password, role_id, profile_image, transaction) {
     try {
       const result = await sequelize.Users.create(
         {
@@ -136,6 +136,7 @@ export const repository = {
           email,
           password,
           role_id,
+          profile_image,
           visible_flag: false,
           status_flag: STATUS_FLAG.PENDING,
         },
