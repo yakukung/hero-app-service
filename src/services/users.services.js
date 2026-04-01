@@ -99,7 +99,9 @@ export const service = {
       }
       if (!req.file) {
         await transaction.rollback();
-        return responseTemplates.setBadRequestResponse(RESPONSE_MESSAGES.BAD_REQUEST);
+        return responseTemplates.setBadRequestResponse(
+          RESPONSE_MESSAGES.BAD_REQUEST,
+        );
       }
       let oldProfileImagePath = null;
       const profile_image = req.file.path;
@@ -221,7 +223,9 @@ export const service = {
           );
         case HTTP_STATUS.BAD_REQUEST.code:
           await transaction.rollback();
-          return responseTemplates.setBadRequestResponse(RESPONSE_MESSAGES.BAD_REQUEST);
+          return responseTemplates.setBadRequestResponse(
+            RESPONSE_MESSAGES.BAD_REQUEST,
+          );
         default:
           await transaction.rollback();
           return responseTemplates.setInternalServerErrorResponse(
@@ -468,12 +472,6 @@ export const service = {
     try {
       const { id } = req.params;
       const { status_flag } = req.body;
-      if (id !== req.user?.id) {
-        await transaction.rollback();
-        return responseTemplates.setForbiddenResponse(
-          RESPONSE_MESSAGES.AUTHENTICATION_INVALID_ERROR,
-        );
-      }
       const findUserById = await usersRepository.findById(id, transaction);
       switch (findUserById.code) {
         case HTTP_STATUS.OK.code:
@@ -582,7 +580,9 @@ export const service = {
 
       if (follower_id === id) {
         await transaction.rollback();
-        return responseTemplates.setBadRequestResponse(RESPONSE_MESSAGES.BAD_REQUEST);
+        return responseTemplates.setBadRequestResponse(
+          RESPONSE_MESSAGES.BAD_REQUEST,
+        );
       }
 
       const findUserById = await usersRepository.findById(id, transaction);
@@ -638,7 +638,9 @@ export const service = {
           });
         case HTTP_STATUS.BAD_REQUEST.code:
           await transaction.rollback();
-          return responseTemplates.setBadRequestResponse(RESPONSE_MESSAGES.BAD_REQUEST);
+          return responseTemplates.setBadRequestResponse(
+            RESPONSE_MESSAGES.BAD_REQUEST,
+          );
         default:
           await transaction.rollback();
           return responseTemplates.setInternalServerErrorResponse(
@@ -667,7 +669,9 @@ export const service = {
 
       if (follower_id === id) {
         await transaction.rollback();
-        return responseTemplates.setBadRequestResponse(RESPONSE_MESSAGES.BAD_REQUEST);
+        return responseTemplates.setBadRequestResponse(
+          RESPONSE_MESSAGES.BAD_REQUEST,
+        );
       }
 
       const findUserById = await usersRepository.findById(id, transaction);
@@ -715,7 +719,9 @@ export const service = {
           return responseTemplates.setNoContentResponse();
         case HTTP_STATUS.BAD_REQUEST.code:
           await transaction.rollback();
-          return responseTemplates.setBadRequestResponse(RESPONSE_MESSAGES.BAD_REQUEST);
+          return responseTemplates.setBadRequestResponse(
+            RESPONSE_MESSAGES.BAD_REQUEST,
+          );
         default:
           await transaction.rollback();
           return responseTemplates.setInternalServerErrorResponse(
