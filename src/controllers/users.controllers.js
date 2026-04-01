@@ -7,6 +7,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
   async getById(req, res) {
@@ -15,6 +16,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
 
@@ -24,6 +26,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
   async updateProfileImage(req, res) {
@@ -32,6 +35,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
   async updatePassword(req, res) {
@@ -40,6 +44,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
   async updateUsername(req, res) {
@@ -48,6 +53,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
   async updateEmail(req, res) {
@@ -56,6 +62,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
   async updateStatusFlag(req, res) {
@@ -64,6 +71,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
   async updateKeyword(req, res) {
@@ -72,6 +80,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
   async follow(req, res) {
@@ -80,6 +89,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
   async unfollow(req, res) {
@@ -88,6 +98,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
 };

@@ -35,10 +35,10 @@ export const responseTemplates = {
       null
     );
   },
-  setFailedResponse(responseMessage) {
+  setBadRequestResponse(responseMessage) {
     return responseUtils(
-      HTTP_STATUS.FAILED.code,
-      HTTP_STATUS.FAILED.message,
+      HTTP_STATUS.BAD_REQUEST.code,
+      HTTP_STATUS.BAD_REQUEST.message,
       null,
       responseMessage
     );
@@ -104,4 +104,3 @@ export const responseRepository = {
     }
 }
   
-

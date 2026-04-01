@@ -63,7 +63,7 @@ const verifyAccessToken = (accessToken) => {
           RESPONSE_MESSAGES.TOKEN_SYNTAX_ERROR_INTERNAL_ERROR,
         );
       default:
-        return responseTemplates.setBadRequestResponse(
+        return responseTemplates.setInternalServerErrorResponse(
           RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
         );
     }
@@ -92,7 +92,7 @@ const verifyRefreshToken = (refreshToken) => {
           RESPONSE_MESSAGES.TOKEN_SYNTAX_ERROR_INTERNAL_ERROR,
         );
       default:
-        return responseTemplates.setBadRequestResponse(
+        return responseTemplates.setInternalServerErrorResponse(
           RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
         );
     }

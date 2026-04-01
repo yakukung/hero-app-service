@@ -7,6 +7,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
   async getByUserId(req, res) {
@@ -15,6 +16,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
   async getById(req, res) {
@@ -23,6 +25,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
   async deleteSheet(req, res) {
@@ -31,6 +34,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
   async getFavorites(req, res) {
@@ -39,6 +43,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
   async create(req, res) {
@@ -57,6 +62,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
   async sheetFavorites(req, res) {
@@ -65,6 +71,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
   async sheetUnFavorites(req, res) {
@@ -73,6 +80,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
 };

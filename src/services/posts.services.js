@@ -84,9 +84,9 @@ export const service = {
       switch (createPost.code) {
         case HTTP_STATUS.CREATED.code:
           break;
-        case HTTP_STATUS.FAILED.code:
+        case HTTP_STATUS.BAD_REQUEST.code:
           await transaction.rollback();
-          return responseTemplates.setFailedResponse(RESPONSE_MESSAGES.FAILED);
+          return responseTemplates.setBadRequestResponse(RESPONSE_MESSAGES.BAD_REQUEST);
         default:
           await transaction.rollback();
           return responseTemplates.setInternalServerErrorResponse(
@@ -268,9 +268,9 @@ export const service = {
       switch (addComment.code) {
         case HTTP_STATUS.CREATED.code:
           break;
-        case HTTP_STATUS.FAILED.code:
+        case HTTP_STATUS.BAD_REQUEST.code:
           await transaction.rollback();
-          return responseTemplates.setFailedResponse(RESPONSE_MESSAGES.FAILED);
+          return responseTemplates.setBadRequestResponse(RESPONSE_MESSAGES.BAD_REQUEST);
         default:
           await transaction.rollback();
           return responseTemplates.setInternalServerErrorResponse(
@@ -296,6 +296,7 @@ export const service = {
     const transaction = await sequelize.transaction();
     try {
       const { id, commentId } = req.params;
+      const user_id = req.user.id;
 
       const findPost = await postsRepository.findById(id, transaction);
       if (findPost.code !== HTTP_STATUS.OK.code) {
@@ -308,6 +309,7 @@ export const service = {
       const removeComment = await postsRepository.removeComment(
         commentId,
         id,
+        user_id,
         transaction,
       );
 
@@ -319,9 +321,9 @@ export const service = {
           return responseTemplates.setNotFoundResponse(
             RESPONSE_MESSAGES.DATA_NOT_FOUND,
           );
-        case HTTP_STATUS.FAILED.code:
+        case HTTP_STATUS.BAD_REQUEST.code:
           await transaction.rollback();
-          return responseTemplates.setFailedResponse(RESPONSE_MESSAGES.FAILED);
+          return responseTemplates.setBadRequestResponse(RESPONSE_MESSAGES.BAD_REQUEST);
         default:
           await transaction.rollback();
           return responseTemplates.setInternalServerErrorResponse(
@@ -373,9 +375,9 @@ export const service = {
       switch (addShare.code) {
         case HTTP_STATUS.CREATED.code:
           break;
-        case HTTP_STATUS.FAILED.code:
+        case HTTP_STATUS.BAD_REQUEST.code:
           await transaction.rollback();
-          return responseTemplates.setFailedResponse(RESPONSE_MESSAGES.FAILED);
+          return responseTemplates.setBadRequestResponse(RESPONSE_MESSAGES.BAD_REQUEST);
         default:
           await transaction.rollback();
           return responseTemplates.setInternalServerErrorResponse(

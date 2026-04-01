@@ -143,7 +143,7 @@ export const repository = {
       );
 
       if (result === null) {
-        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+        return responseRepository.setResult(HTTP_STATUS.BAD_REQUEST, null);
       }
 
       return responseRepository.setResult(HTTP_STATUS.CREATED, result);
@@ -177,7 +177,7 @@ export const repository = {
       );
 
       if (result === null) {
-        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+        return responseRepository.setResult(HTTP_STATUS.BAD_REQUEST, null);
       }
 
       return responseRepository.setResult(HTTP_STATUS.CREATED, result);
@@ -191,7 +191,7 @@ export const repository = {
   },
   async updateStatusUser(user_id, transaction) {
     try {
-      const result = await sequelize.Users.update(
+      const [affectedRows] = await sequelize.Users.update(
         {
           visible_flag: true,
           status_flag: STATUS_FLAG.ACTIVE,
@@ -199,11 +199,11 @@ export const repository = {
         { where: { id: user_id }, transaction },
       );
 
-      if (result === null) {
-        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+      if (affectedRows === 0) {
+        return responseRepository.setResult(HTTP_STATUS.NOT_FOUND, null);
       }
 
-      return responseRepository.setResult(HTTP_STATUS.OK, result);
+      return responseRepository.setResult(HTTP_STATUS.OK, affectedRows);
     } catch (error) {
       console.log(error);
       return responseRepository.setResult(
@@ -214,18 +214,18 @@ export const repository = {
   },
   async updateProfileImage(uid, profile_image, transaction) {
     try {
-      const result = await sequelize.Users.update(
+      const [affectedRows] = await sequelize.Users.update(
         {
           profile_image,
         },
         { where: { id: uid }, transaction },
       );
 
-      if (result === null) {
-        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+      if (affectedRows === 0) {
+        return responseRepository.setResult(HTTP_STATUS.NOT_FOUND, null);
       }
 
-      return responseRepository.setResult(HTTP_STATUS.OK, result);
+      return responseRepository.setResult(HTTP_STATUS.OK, affectedRows);
     } catch (error) {
       console.log(error);
       return responseRepository.setResult(
@@ -241,16 +241,20 @@ export const repository = {
       if (password !== undefined) updateData.password = password;
       if (profile_image !== undefined) updateData.profile_image = profile_image;
 
-      const result = await sequelize.Users.update(updateData, {
+      if (Object.keys(updateData).length === 0) {
+        return responseRepository.setResult(HTTP_STATUS.BAD_REQUEST, null);
+      }
+
+      const [affectedRows] = await sequelize.Users.update(updateData, {
         where: { id: uid },
         transaction,
       });
 
-      if (result === null) {
-        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+      if (affectedRows === 0) {
+        return responseRepository.setResult(HTTP_STATUS.NOT_FOUND, null);
       }
 
-      return responseRepository.setResult(HTTP_STATUS.OK, result);
+      return responseRepository.setResult(HTTP_STATUS.OK, affectedRows);
     } catch (error) {
       console.log(error);
       return responseRepository.setResult(
@@ -261,18 +265,18 @@ export const repository = {
   },
   async updatePassword(uid, password, transaction) {
     try {
-      const result = await sequelize.Users.update(
+      const [affectedRows] = await sequelize.Users.update(
         {
           password,
         },
         { where: { id: uid }, transaction },
       );
 
-      if (result === null) {
-        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+      if (affectedRows === 0) {
+        return responseRepository.setResult(HTTP_STATUS.NOT_FOUND, null);
       }
 
-      return responseRepository.setResult(HTTP_STATUS.OK, result);
+      return responseRepository.setResult(HTTP_STATUS.OK, affectedRows);
     } catch (error) {
       console.log(error);
       return responseRepository.setResult(
@@ -283,18 +287,18 @@ export const repository = {
   },
   async updateUsername(uid, username, transaction) {
     try {
-      const result = await sequelize.Users.update(
+      const [affectedRows] = await sequelize.Users.update(
         {
           username,
         },
         { where: { id: uid }, transaction },
       );
 
-      if (result === null) {
-        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+      if (affectedRows === 0) {
+        return responseRepository.setResult(HTTP_STATUS.NOT_FOUND, null);
       }
 
-      return responseRepository.setResult(HTTP_STATUS.OK, result);
+      return responseRepository.setResult(HTTP_STATUS.OK, affectedRows);
     } catch (error) {
       console.log(error);
       return responseRepository.setResult(
@@ -305,18 +309,18 @@ export const repository = {
   },
   async updateEmail(uid, email, transaction) {
     try {
-      const result = await sequelize.Users.update(
+      const [affectedRows] = await sequelize.Users.update(
         {
           email,
         },
         { where: { id: uid }, transaction },
       );
 
-      if (result === null) {
-        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+      if (affectedRows === 0) {
+        return responseRepository.setResult(HTTP_STATUS.NOT_FOUND, null);
       }
 
-      return responseRepository.setResult(HTTP_STATUS.OK, result);
+      return responseRepository.setResult(HTTP_STATUS.OK, affectedRows);
     } catch (error) {
       console.log(error);
       return responseRepository.setResult(
@@ -327,18 +331,18 @@ export const repository = {
   },
   async updateStatusFlag(uid, status_flag, transaction) {
     try {
-      const result = await sequelize.Users.update(
+      const [affectedRows] = await sequelize.Users.update(
         {
           status_flag,
         },
         { where: { id: uid }, transaction },
       );
 
-      if (result === null) {
-        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+      if (affectedRows === 0) {
+        return responseRepository.setResult(HTTP_STATUS.NOT_FOUND, null);
       }
 
-      return responseRepository.setResult(HTTP_STATUS.OK, result);
+      return responseRepository.setResult(HTTP_STATUS.OK, affectedRows);
     } catch (error) {
       console.log(error);
       return responseRepository.setResult(
@@ -349,18 +353,18 @@ export const repository = {
   },
   async updateKeyword(uid, keyword, transaction) {
     try {
-      const result = await sequelize.Users.update(
+      const [affectedRows] = await sequelize.Users.update(
         {
           keyword,
         },
         { where: { id: uid }, transaction },
       );
 
-      if (result === null) {
-        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+      if (affectedRows === 0) {
+        return responseRepository.setResult(HTTP_STATUS.NOT_FOUND, null);
       }
 
-      return responseRepository.setResult(HTTP_STATUS.OK, result);
+      return responseRepository.setResult(HTTP_STATUS.OK, affectedRows);
     } catch (error) {
       console.log(error);
       return responseRepository.setResult(

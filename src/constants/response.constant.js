@@ -14,7 +14,7 @@ export const RESPONSE_MESSAGES = Object.freeze({
       en: "Data are not found.",
     },
   },
-  FAILED: {
+  BAD_REQUEST: {
     message: {
       th: "คำขอไม่ถูกต้อง",
       en: "Bad request.",

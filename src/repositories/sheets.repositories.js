@@ -18,7 +18,7 @@ export const repository = {
       );
 
       if (result === null) {
-        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+        return responseRepository.setResult(HTTP_STATUS.BAD_REQUEST, null);
       }
 
       return responseRepository.setResult(

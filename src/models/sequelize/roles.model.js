@@ -24,7 +24,7 @@ export const Roles = sequelize.define(
     status_flag: {
       type: DataTypes.ENUM(...ACTIVE_INACTIVE_STATUS),
       allowNull: false,
-      defaultValue: "ACTIVE",
+      defaultValue: ACTIVE_INACTIVE_STATUS.ACTIVE,
     },
     created_at: {
       type: DataTypes.DATE(3),

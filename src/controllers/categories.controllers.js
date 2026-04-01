@@ -7,6 +7,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
   async getById(req, res) {
@@ -15,6 +16,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
 };

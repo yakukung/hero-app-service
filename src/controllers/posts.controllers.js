@@ -7,6 +7,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
   async getById(req, res) {
@@ -15,6 +16,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
   async create(req, res) {
@@ -23,6 +25,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
   async like(req, res) {
@@ -31,6 +34,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
   async unlike(req, res) {
@@ -39,6 +43,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
   async getComments(req, res) {
@@ -47,6 +52,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
   async comment(req, res) {
@@ -55,6 +61,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
   async deleteComment(req, res) {
@@ -63,6 +70,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
   async share(req, res) {
@@ -71,6 +79,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
 };

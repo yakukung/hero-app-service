@@ -1,7 +1,10 @@
 import { DataTypes } from "sequelize";
 import { v7 as uuidv7 } from "uuid";
 import { sequelize } from "../../configs/sequelize.configs.js";
-import { ACCOUNT_STATUS } from "../../constants/db_schema.constants.js";
+import {
+  ACCOUNT_STATUS,
+  ACTIVE_INACTIVE_STATUS,
+} from "../../constants/db_schema.constants.js";
 
 export const UsersPlans = sequelize.define(
   "users_plans",
@@ -49,7 +52,7 @@ export const UsersPlans = sequelize.define(
     status_flag: {
       type: DataTypes.ENUM(...ACCOUNT_STATUS),
       allowNull: false,
-      defaultValue: "ACTIVE",
+      defaultValue: ACTIVE_INACTIVE_STATUS.ACTIVE,
     },
     created_at: {
       type: DataTypes.DATE(3),

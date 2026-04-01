@@ -74,7 +74,7 @@ export const repository = {
         { transaction },
       );
       if (result === null) {
-        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+        return responseRepository.setResult(HTTP_STATUS.BAD_REQUEST, null);
       }
 
       return responseRepository.setResult(HTTP_STATUS.CREATED, result);
@@ -93,8 +93,8 @@ export const repository = {
         where: { user_id, sheet_id },
         transaction,
       });
-      if (result === null) {
-        return responseRepository.setResult(HTTP_STATUS.FAILED, null);
+      if (result === 0) {
+        return responseRepository.setResult(HTTP_STATUS.NOT_FOUND, null);
       }
 
       return responseRepository.setResult(HTTP_STATUS.OK, result);

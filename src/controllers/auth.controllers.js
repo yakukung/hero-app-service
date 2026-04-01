@@ -13,6 +13,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
   async verify(req, res) {
@@ -43,6 +44,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
   async loginByGoogle(req, res) {
@@ -51,6 +53,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
   async forgotPassword(req, res) {
@@ -59,6 +62,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
   async resetPassword(req, res) {
@@ -67,6 +71,7 @@ export const controller = {
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
   async resetPasswordPage(req, res) {

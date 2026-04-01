@@ -27,7 +27,7 @@ export const service = {
           break;
         case HTTP_STATUS.NOT_FOUND.code:
           return responseTemplates.setNotFoundResponse(
-            RESPONSE_MESSAGES.NOT_FOUND,
+            RESPONSE_MESSAGES.DATA_NOT_FOUND,
           );
         default:
           return responseTemplates.setInternalServerErrorResponse(
@@ -41,6 +41,9 @@ export const service = {
       return responseTemplates.setOKResponse(mappedSheet);
     } catch (error) {
       console.log(error);
+      return responseTemplates.setInternalServerErrorResponse(
+        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+      );
     }
   },
 
@@ -67,6 +70,9 @@ export const service = {
       return responseTemplates.setOKResponse(mappedSheet);
     } catch (error) {
       console.log(error);
+      return responseTemplates.setInternalServerErrorResponse(
+        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+      );
     }
   },
 
@@ -189,7 +195,7 @@ export const service = {
       if (!CATEGORY_ENUM_VALUES.includes(normalizedCategory)) {
         await transaction.rollback();
         await deleteUploadedFiles(allFiles);
-        return responseTemplates.setFailedResponse(RESPONSE_MESSAGES.FAILED);
+        return responseTemplates.setBadRequestResponse(RESPONSE_MESSAGES.BAD_REQUEST);
       }
 
       const createSheet = await sheetsRepository.createSheet(
@@ -209,11 +215,11 @@ export const service = {
           switch (createSheetCategory.code) {
             case HTTP_STATUS.CREATED.code:
               break;
-            case HTTP_STATUS.FAILED.code:
+            case HTTP_STATUS.BAD_REQUEST.code:
               await transaction.rollback();
               await deleteUploadedFiles(allFiles);
-              return responseTemplates.setFailedResponse(
-                RESPONSE_MESSAGES.FAILED,
+              return responseTemplates.setBadRequestResponse(
+                RESPONSE_MESSAGES.BAD_REQUEST,
               );
             default:
               await transaction.rollback();
@@ -239,11 +245,11 @@ export const service = {
             switch (createKeyword.code) {
               case HTTP_STATUS.CREATED.code:
                 break;
-              case HTTP_STATUS.FAILED.code:
+              case HTTP_STATUS.BAD_REQUEST.code:
                 await transaction.rollback();
                 await deleteUploadedFiles(allFiles);
-                return responseTemplates.setFailedResponse(
-                  RESPONSE_MESSAGES.FAILED,
+                return responseTemplates.setBadRequestResponse(
+                  RESPONSE_MESSAGES.BAD_REQUEST,
                 );
               default:
                 await transaction.rollback();
@@ -276,11 +282,11 @@ export const service = {
                     switch (createAnswer.code) {
                       case HTTP_STATUS.CREATED.code:
                         break;
-                      case HTTP_STATUS.FAILED.code:
+                      case HTTP_STATUS.BAD_REQUEST.code:
                         await transaction.rollback();
                         await deleteUploadedFiles(allFiles);
-                        return responseTemplates.setFailedResponse(
-                          RESPONSE_MESSAGES.FAILED,
+                        return responseTemplates.setBadRequestResponse(
+                          RESPONSE_MESSAGES.BAD_REQUEST,
                         );
                       default:
                         await transaction.rollback();
@@ -291,11 +297,11 @@ export const service = {
                     }
                   }
                   break;
-                case HTTP_STATUS.FAILED.code:
+                case HTTP_STATUS.BAD_REQUEST.code:
                   await transaction.rollback();
                   await deleteUploadedFiles(allFiles);
-                  return responseTemplates.setFailedResponse(
-                    RESPONSE_MESSAGES.FAILED,
+                  return responseTemplates.setBadRequestResponse(
+                    RESPONSE_MESSAGES.BAD_REQUEST,
                   );
                 default:
                   await transaction.rollback();
@@ -342,8 +348,8 @@ export const service = {
               if (createFile.code !== HTTP_STATUS.CREATED.code) {
                 await transaction.rollback();
                 await deleteUploadedFiles(allFiles);
-                return responseTemplates.setFailedResponse(
-                  RESPONSE_MESSAGES.FAILED,
+                return responseTemplates.setBadRequestResponse(
+                  RESPONSE_MESSAGES.BAD_REQUEST,
                 );
               }
             }
@@ -366,10 +372,10 @@ export const service = {
             findSheet.result,
           );
           return responseTemplates.setCreatedResponse(mappedSheet);
-        case HTTP_STATUS.FAILED.code:
+        case HTTP_STATUS.BAD_REQUEST.code:
           await transaction.rollback();
           await deleteUploadedFiles(allFiles);
-          return responseTemplates.setFailedResponse(RESPONSE_MESSAGES.FAILED);
+          return responseTemplates.setBadRequestResponse(RESPONSE_MESSAGES.BAD_REQUEST);
         default:
           await transaction.rollback();
           await deleteUploadedFiles(allFiles);
@@ -399,9 +405,9 @@ export const service = {
       switch (result.code) {
         case HTTP_STATUS.CREATED.code:
           break;
-        case HTTP_STATUS.FAILED.code:
+        case HTTP_STATUS.BAD_REQUEST.code:
           await transaction.rollback();
-          return responseTemplates.setFailedResponse(RESPONSE_MESSAGES.FAILED);
+          return responseTemplates.setBadRequestResponse(RESPONSE_MESSAGES.BAD_REQUEST);
         default:
           await transaction.rollback();
           return responseTemplates.setInternalServerErrorResponse(
@@ -409,7 +415,7 @@ export const service = {
           );
       }
       await transaction.commit();
-      return responseTemplates.setCreatedResponse(result.result);
+      return responseTemplates.setNoContentResponse();
     } catch (error) {
       await transaction.rollback();
       console.error(error);
@@ -431,9 +437,12 @@ export const service = {
       switch (result.code) {
         case HTTP_STATUS.OK.code:
           break;
-        case HTTP_STATUS.FAILED.code:
+        case HTTP_STATUS.NOT_FOUND.code:
           await transaction.rollback();
-          return responseTemplates.setFailedResponse(RESPONSE_MESSAGES.FAILED);
+          return responseTemplates.setNoContentResponse();
+        case HTTP_STATUS.BAD_REQUEST.code:
+          await transaction.rollback();
+          return responseTemplates.setBadRequestResponse(RESPONSE_MESSAGES.BAD_REQUEST);
         default:
           await transaction.rollback();
           return responseTemplates.setInternalServerErrorResponse(
@@ -441,7 +450,7 @@ export const service = {
           );
       }
       await transaction.commit();
-      return responseTemplates.setCreatedResponse(result.result);
+      return responseTemplates.setNoContentResponse();
     } catch (error) {
       await transaction.rollback();
       console.error(error);
