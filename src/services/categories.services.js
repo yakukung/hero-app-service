@@ -11,6 +11,8 @@ export const service = {
   },
 
   async getById(_req, _res) {
-    return responseTemplates.setNotFoundResponse(RESPONSE_MESSAGES.DATA_NOT_FOUND);
+    return responseTemplates.setNotFoundResponse(
+      RESPONSE_MESSAGES.DATA_NOT_FOUND,
+    );
   },
 };
