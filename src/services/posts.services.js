@@ -407,4 +407,55 @@ export const service = {
       );
     }
   },
+
+  async unshare(req, res) {
+    const transaction = await sequelize.transaction();
+    try {
+      const { id } = req.params;
+      const user_id = req.user.id;
+
+      const findPost = await postsRepository.findById(id, transaction);
+      if (findPost.code !== HTTP_STATUS.OK.code) {
+        await transaction.rollback();
+        return responseTemplates.setNotFoundResponse(
+          RESPONSE_MESSAGES.DATA_NOT_FOUND,
+        );
+      }
+
+      const findShare = await postsRepository.findShare(
+        user_id,
+        id,
+        transaction,
+      );
+
+      if (findShare.code !== HTTP_STATUS.OK.code) {
+        await transaction.rollback();
+        return responseTemplates.setNotFoundResponse(
+          RESPONSE_MESSAGES.DATA_NOT_FOUND,
+        );
+      }
+
+      const removeShare = await postsRepository.removeShare(
+        user_id,
+        id,
+        transaction,
+      );
+
+      if (removeShare.code !== HTTP_STATUS.OK.code) {
+        await transaction.rollback();
+        return responseTemplates.setInternalServerErrorResponse(
+          RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      await transaction.commit();
+      return responseTemplates.setNoContentResponse();
+    } catch (error) {
+      await transaction.rollback();
+      console.log(error);
+      return responseTemplates.setInternalServerErrorResponse(
+        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+      );
+    }
+  },
 };

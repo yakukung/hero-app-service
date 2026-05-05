@@ -13,3 +13,4 @@ router.get("/:id/comments", postsController.getComments);
 router.post("/:id/comment", authMiddleware, postsController.comment);
 router.delete("/:id/comment/:commentId", authMiddleware, postsController.deleteComment);
 router.post("/:id/share", authMiddleware, postsController.share);
+router.delete("/:id/share", authMiddleware, postsController.unshare);

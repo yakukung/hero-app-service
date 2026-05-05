@@ -373,4 +373,33 @@ export const repository = {
       );
     }
   },
+  async removeShare(userId, postId, transaction) {
+    try {
+      const result = await sequelize.PostsShares.destroy({
+        where: { user_id: userId, post_id: postId },
+        transaction,
+      });
+
+      if (result === 0) {
+        return responseRepository.setResult(HTTP_STATUS.NOT_FOUND, null);
+      }
+
+      const updatePost = await sequelize.Posts.update(
+        { share_count: Sequelize.literal("share_count - 1") },
+        { where: { id: postId }, transaction },
+      );
+
+      if (!updatePost) {
+        return responseRepository.setResult(HTTP_STATUS.BAD_REQUEST, null);
+      }
+
+      return responseRepository.setResult(HTTP_STATUS.OK, null);
+    } catch (error) {
+      console.error(error);
+      return responseRepository.setResult(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        null,
+      );
+    }
+  },
 };
