@@ -43,14 +43,22 @@ export const mapping = {
       data.shares && data.shares.length > 0
         ? await mapPostsShares.mapPostsShares(data.shares, data.shares.length)
         : null;
+    const actualLikeCount = data.likes ? data.likes.length : data.like_count;
+    const actualCommentCount = data.comments
+      ? data.comments.length
+      : data.comment_count;
+    const actualShareCount = data.shares
+      ? data.shares.length
+      : data.share_count;
+
     return {
       id: data.id,
       content: data.content,
       sheet_id: data.sheet_id,
       user_id: data.user_id,
-      like_count: data.like_count,
-      comment_count: data.comment_count,
-      share_count: data.share_count,
+      like_count: actualLikeCount,
+      comment_count: actualCommentCount,
+      share_count: actualShareCount,
       author: user,
       sheet: sheet,
       likes: likes,

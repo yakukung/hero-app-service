@@ -86,7 +86,9 @@ export const service = {
           break;
         case HTTP_STATUS.BAD_REQUEST.code:
           await transaction.rollback();
-          return responseTemplates.setBadRequestResponse(RESPONSE_MESSAGES.BAD_REQUEST);
+          return responseTemplates.setBadRequestResponse(
+            RESPONSE_MESSAGES.BAD_REQUEST,
+          );
         default:
           await transaction.rollback();
           return responseTemplates.setInternalServerErrorResponse(
@@ -270,7 +272,9 @@ export const service = {
           break;
         case HTTP_STATUS.BAD_REQUEST.code:
           await transaction.rollback();
-          return responseTemplates.setBadRequestResponse(RESPONSE_MESSAGES.BAD_REQUEST);
+          return responseTemplates.setBadRequestResponse(
+            RESPONSE_MESSAGES.BAD_REQUEST,
+          );
         default:
           await transaction.rollback();
           return responseTemplates.setInternalServerErrorResponse(
@@ -323,7 +327,9 @@ export const service = {
           );
         case HTTP_STATUS.BAD_REQUEST.code:
           await transaction.rollback();
-          return responseTemplates.setBadRequestResponse(RESPONSE_MESSAGES.BAD_REQUEST);
+          return responseTemplates.setBadRequestResponse(
+            RESPONSE_MESSAGES.BAD_REQUEST,
+          );
         default:
           await transaction.rollback();
           return responseTemplates.setInternalServerErrorResponse(
@@ -377,7 +383,9 @@ export const service = {
           break;
         case HTTP_STATUS.BAD_REQUEST.code:
           await transaction.rollback();
-          return responseTemplates.setBadRequestResponse(RESPONSE_MESSAGES.BAD_REQUEST);
+          return responseTemplates.setBadRequestResponse(
+            RESPONSE_MESSAGES.BAD_REQUEST,
+          );
         default:
           await transaction.rollback();
           return responseTemplates.setInternalServerErrorResponse(
