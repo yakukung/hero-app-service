@@ -26,6 +26,15 @@ const storage = multer.diskStorage({
           dest = path.join(uploadDir, "sheets", "temp");
         }
       }
+    } else if (
+      file.fieldname === "slip_image" &&
+      (req.baseUrl.includes("/wallet") ||
+        req.baseUrl.includes("/subscriptions") ||
+        req.baseUrl.includes("/payments") ||
+        req.baseUrl.includes("/admin"))
+    ) {
+      const userId = req.user?.id || "unknown";
+      dest = path.join(uploadDir, "payments", userId, "slips");
     }
 
     if (!fs.existsSync(dest)) {
@@ -42,11 +51,22 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image/")) {
-    cb(null, true);
-  } else {
-    cb(new Error("Only images are allowed!"), false);
+  const isImage = file.mimetype.startsWith("image/");
+  const isPdf = file.mimetype === "application/pdf";
+  const isSheetFile = req.baseUrl.includes("/sheets") && file.fieldname === "files";
+
+  if (isSheetFile && (isImage || isPdf)) {
+    return cb(null, true);
   }
+
+  if (!isSheetFile && isImage) {
+    return cb(null, true);
+  }
+
+  const errorMessage = isSheetFile
+    ? "Only image or PDF files are allowed for sheet files."
+    : "Only images are allowed!";
+  return cb(new Error(errorMessage), false);
 };
 
 export const upload = multer({

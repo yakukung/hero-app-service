@@ -1,145 +1,129 @@
-import { service as sheetsService } from "../services/sheets.services.js";
+import { service as adminService } from "../services/admin.services.js";
 
 export const controller = {
-  async getPurchased(req, res) {
+  async getPayments(req, res) {
     try {
-      const result = await sheetsService.getPurchased(req, res);
+      const result = await adminService.getPayments(req, res);
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: "Internal Server Error" });
     }
   },
-  async purchase(req, res) {
-    try {
-      const result = await sheetsService.purchase(req, res);
-      res.status(parseInt(result.code)).json(result);
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ message: "Internal Server Error" });
-    }
-  },
-  async getAll(req, res) {
-    try {
-      const result = await sheetsService.getAll(req, res);
-      res.status(parseInt(result.code)).json(result);
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ message: "Internal Server Error" });
-    }
-  },
-  async getByUserId(req, res) {
-    try {
-      const result = await sheetsService.getByUserId(req, res);
-      res.status(parseInt(result.code)).json(result);
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ message: "Internal Server Error" });
-    }
-  },
-  async getById(req, res) {
-    try {
-      const result = await sheetsService.getById(req, res);
-      res.status(parseInt(result.code)).json(result);
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ message: "Internal Server Error" });
-    }
-  },
-  async deleteSheet(req, res) {
-    try {
-      const result = await sheetsService.deleteSheet(req, res);
-      res.status(parseInt(result.code)).json(result);
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ message: "Internal Server Error" });
-    }
-  },
-  async updateSheet(req, res) {
-    try {
-      const result = await sheetsService.updateSheet(req, res);
-      res.status(parseInt(result.code)).json(result);
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ message: "Internal Server Error" });
-    }
-  },
-  async getFavorites(req, res) {
-    try {
-      const result = await sheetsService.getFavorites(req, res);
-      res.status(parseInt(result.code)).json(result);
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ message: "Internal Server Error" });
-    }
-  },
-  async create(req, res) {
-    try {
-      ["keywords", "questions"].forEach((key) => {
-        if (typeof req.body[key] === "string") {
-          try {
-            req.body[key] = JSON.parse(req.body[key]);
-          } catch {
-            if (key === "keywords") req.body[key] = [req.body[key]];
-          }
-        }
-      });
 
-      const result = await sheetsService.create(req, res);
+  async updateWalletTopUpStatus(req, res) {
+    try {
+      const result = await adminService.updateWalletTopUpStatus(req, res);
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: "Internal Server Error" });
     }
   },
-  async sheetFavorites(req, res) {
+
+  async updateSubscriptionStatus(req, res) {
     try {
-      const result = await sheetsService.sheetFavorites(req, res);
+      const result = await adminService.updateSubscriptionStatus(req, res);
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: "Internal Server Error" });
     }
   },
-  async sheetUnFavorites(req, res) {
+
+  async updateSheetPurchaseStatus(req, res) {
     try {
-      const result = await sheetsService.sheetUnFavorites(req, res);
+      const result = await adminService.updateSheetPurchaseStatus(req, res);
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: "Internal Server Error" });
     }
   },
-  async getReviews(req, res) {
+
+  async getSheets(req, res) {
     try {
-      const result = await sheetsService.getReviews(req, res);
+      const result = await adminService.getSheets(req, res);
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: "Internal Server Error" });
     }
   },
-  async upsertReview(req, res) {
+
+  async getSubscriptions(req, res) {
     try {
-      const result = await sheetsService.upsertReview(req, res);
+      const result = await adminService.getSubscriptions(req, res);
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: "Internal Server Error" });
     }
   },
-  async updateReview(req, res) {
+
+  async getReports(req, res) {
     try {
-      const result = await sheetsService.updateReview(req, res);
+      const result = await adminService.getReports(req, res);
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: "Internal Server Error" });
     }
   },
-  async deleteReview(req, res) {
+
+  async updateReportStatus(req, res) {
     try {
-      const result = await sheetsService.deleteReview(req, res);
+      const result = await adminService.updateReportStatus(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
+
+  async reportAction(req, res) {
+    try {
+      const result = await adminService.reportAction(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
+
+  async updatePostStatus(req, res) {
+    try {
+      const result = await adminService.updatePostStatus(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
+
+  async updateSheetStatus(req, res) {
+    try {
+      const result = await adminService.updateSheetStatus(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
+
+  async updateCommentStatus(req, res) {
+    try {
+      const result = await adminService.updateCommentStatus(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
+
+  async getRevenue(req, res) {
+    try {
+      const result = await adminService.getRevenue(req, res);
       res.status(parseInt(result.code)).json(result);
     } catch (error) {
       console.log(error);

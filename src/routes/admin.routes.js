@@ -1,0 +1,22 @@
+import express from "express";
+import { authMiddleware } from "../middleware/auth.middleware.js";
+import { adminMiddleware } from "../middleware/admin.middleware.js";
+import { controller as adminController } from "../controllers/admin.controllers.js";
+
+export const router = express.Router();
+
+router.use(authMiddleware, adminMiddleware);
+
+router.get("/payments", adminController.getPayments);
+router.patch("/wallet-top-ups/:id/status", adminController.updateWalletTopUpStatus);
+router.patch("/subscriptions/:id/status", adminController.updateSubscriptionStatus);
+router.patch("/sheet-purchases/:id/status", adminController.updateSheetPurchaseStatus);
+router.get("/sheets", adminController.getSheets);
+router.get("/subscriptions", adminController.getSubscriptions);
+router.get("/reports", adminController.getReports);
+router.patch("/reports/:id/status", adminController.updateReportStatus);
+router.post("/reports/:id/action", adminController.reportAction);
+router.patch("/sheets/:id/status", adminController.updateSheetStatus);
+router.patch("/posts/:id/status", adminController.updatePostStatus);
+router.patch("/comments/:id/status", adminController.updateCommentStatus);
+router.get("/revenue", adminController.getRevenue);

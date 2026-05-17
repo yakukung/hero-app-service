@@ -29,6 +29,7 @@ export const mapping = {
         role_id: data.role_id,
         point: data.point,
         keyword: data.keyword,
+        wallet: data.total_wallet,
         total_wallet: data.total_wallet,
         flag: {
           visible_flag: data.visible_flag,
@@ -66,6 +67,7 @@ export const mapping = {
         roles: role,
         point: data.result.point,
         keyword: data.result.keyword,
+        wallet: data.result.total_wallet,
         total_wallet: data.result.total_wallet,
         tokens: data.accessToken
           ? {

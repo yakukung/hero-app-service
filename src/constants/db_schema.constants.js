@@ -29,7 +29,7 @@ export const CATEGORY_ENUM_VALUES = [
   "อื่นๆ",
 ];
 
-export const PAYMENT_METHODS = ["PROMPTPAY"];
+export const PAYMENT_METHODS = ["PROMPTPAY", "WALLET"];
 
 export const PAYMENT_STATUS = ["PENDING", "SUCCESSFUL", "FAILED", "REFUNDED"];
 
