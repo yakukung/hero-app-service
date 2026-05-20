@@ -61,6 +61,56 @@ export const controller = {
     }
   },
 
+  async getSubscriptions(req, res) {
+    try {
+      const result = await adminService.getSubscriptions(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
+
+  async getReports(req, res) {
+    try {
+      const result = await adminService.getReports(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
+
+  async updateReportStatus(req, res) {
+    try {
+      const result = await adminService.updateReportStatus(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
+
+  async reportAction(req, res) {
+    try {
+      const result = await adminService.reportAction(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
+
+  async updatePostStatus(req, res) {
+    try {
+      const result = await adminService.updatePostStatus(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
+
   async updateSheetStatus(req, res) {
     try {
       const result = await adminService.updateSheetStatus(req, res);
