@@ -62,6 +62,7 @@ export const formatPayment = ({
   created_at,
   type,
   slip_image_url,
+  payment_method,
 }) => ({
   id,
   payment_id: id,
@@ -77,6 +78,7 @@ export const formatPayment = ({
   value: toNumber(amount),
   payment_status,
   status: payment_status,
+  payment_method,
   slip_image_url,
   created_at,
 });

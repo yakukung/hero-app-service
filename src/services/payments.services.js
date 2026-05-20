@@ -23,6 +23,7 @@ export const service = {
           created_at: item.created_at,
           type: "WALLET_TOPUP",
           slip_image_url: item.slip_image_url,
+          payment_method: item.payment_method,
         });
       }),
       ...planPayments.map((row) => {
@@ -37,6 +38,7 @@ export const service = {
           created_at: item.created_at,
           type: "SUBSCRIPTION",
           slip_image_url: item.slip_image_url,
+          payment_method: item.payment_method,
         });
       }),
       ...sheetPayments.map((row) => {
@@ -51,6 +53,7 @@ export const service = {
           created_at: item.created_at,
           type: "SHEET_PURCHASE",
           slip_image_url: item.slip_image_url,
+          payment_method: item.payment_method,
         });
       }),
     ];
