@@ -142,6 +142,53 @@ export const repository = {
     });
   },
 
+  async findSheetByIdForAdmin(id) {
+    return models.Sheets.findByPk(id, {
+      include: [
+        {
+          model: models.Keywords,
+          as: "keywords",
+        },
+        {
+          model: models.SheetsQuestions,
+          as: "questions",
+          include: [
+            {
+              model: models.SheetsAnswers,
+              as: "answers",
+            },
+          ],
+        },
+        {
+          model: models.Categories,
+          as: "categories",
+        },
+        {
+          model: models.SheetsFiles,
+          as: "files",
+        },
+        {
+          model: models.Users,
+          as: "author",
+        },
+        {
+          model: models.BuySheets,
+          as: "payments",
+          required: false,
+          where: {
+            payment_status: "SUCCESSFUL",
+          },
+          include: [
+            {
+              model: models.Users,
+              as: "user",
+            },
+          ],
+        },
+      ],
+    });
+  },
+
   async findAllActiveSubscriptions() {
     return models.UsersPlans.findAll({
       where: {

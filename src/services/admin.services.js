@@ -1,6 +1,7 @@
 import { sequelize } from "../configs/sequelize.configs.js";
 import { RESPONSE_MESSAGES } from "../constants/response.constant.js";
 import { repository as adminRepository } from "../repositories/admin.repositories.js";
+import { mapping as sheetsMapping } from "../models/mapping/sheets.mapping.js";
 import { activateSubscriptionPayment } from "./subscriptions.services.js";
 import { service as revenueService } from "./revenue.services.js";
 import {
@@ -324,6 +325,26 @@ export const service = {
     return responseTemplates.setOKResponse({
       sheets: sheets.map(mapAdminSheet),
     });
+  },
+
+  async getSheetById(req) {
+    try {
+      const sheet = await adminRepository.findSheetByIdForAdmin(
+        req.params.id,
+      );
+      if (!sheet) {
+        return responseTemplates.setNotFoundResponse(
+          RESPONSE_MESSAGES.DATA_NOT_FOUND,
+        );
+      }
+      const mapped = await sheetsMapping.mapSheetDetail(sheet.dataValues);
+      return responseTemplates.setOKResponse(mapped);
+    } catch (error) {
+      console.error(error);
+      return responseTemplates.setInternalServerErrorResponse(
+        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+      );
+    }
   },
 
   async getSubscriptions() {

@@ -12,6 +12,7 @@ router.patch("/wallet-top-ups/:id/status", adminController.updateWalletTopUpStat
 router.patch("/subscriptions/:id/status", adminController.updateSubscriptionStatus);
 router.patch("/sheet-purchases/:id/status", adminController.updateSheetPurchaseStatus);
 router.get("/sheets", adminController.getSheets);
+router.get("/sheets/:id", adminController.getSheetById);
 router.get("/subscriptions", adminController.getSubscriptions);
 router.get("/reports", adminController.getReports);
 router.patch("/reports/:id/status", adminController.updateReportStatus);
