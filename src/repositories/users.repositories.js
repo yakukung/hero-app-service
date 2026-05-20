@@ -69,6 +69,25 @@ export const repository = {
             attributes: ["id"],
             through: { attributes: [] },
           },
+          {
+            model: sequelize.UsersPlans,
+            as: "userPlans",
+            where: {
+              status_flag: "ACTIVE",
+              visible_flag: { [Op.ne]: false },
+              expires_at: { [Op.gt]: new Date() },
+            },
+            include: [
+              {
+                model: sequelize.Plans,
+                as: "plan",
+                attributes: ["id", "name", "price"],
+              },
+            ],
+            required: false,
+            limit: 1,
+            order: [["expires_at", "DESC"]],
+          },
         ],
         where: { id },
         transaction,

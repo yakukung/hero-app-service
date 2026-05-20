@@ -57,6 +57,11 @@ export const mapping = {
     const followings = await mapUsersFollowsResponse.mapUsersFollows(
       data.result.followings,
     );
+
+    const activePlan = Array.isArray(data.result.userPlans) && data.result.userPlans.length > 0
+      ? data.result.userPlans[0]
+      : null;
+
     try {
       return {
         id: data.result.id,
@@ -69,6 +74,16 @@ export const mapping = {
         keyword: data.result.keyword,
         wallet: data.result.total_wallet,
         total_wallet: data.result.total_wallet,
+        subscription: activePlan
+          ? {
+              plan_id: activePlan.plan_id,
+              plan_name: activePlan.plan?.name || null,
+              plan_price: activePlan.plan?.price || null,
+              start_at: activePlan.start_at,
+              expires_at: activePlan.expires_at,
+              auto_renew: activePlan.auto_renew,
+            }
+          : null,
         tokens: data.accessToken
           ? {
               access_token: data.accessToken,

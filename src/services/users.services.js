@@ -805,7 +805,7 @@ export const service = {
         payment_status: "SUCCESSFUL",
         slip_image_url: null,
         created_by: req.user.id,
-      });
+      }, transaction);
 
       await activateSubscriptionPayment(payment, req.user.id, transaction);
       await transaction.commit();

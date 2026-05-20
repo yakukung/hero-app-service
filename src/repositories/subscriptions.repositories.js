@@ -60,8 +60,8 @@ export const repository = {
     });
   },
 
-  async createBuyPlan(payload) {
-    return models.BuyPlans.create(payload);
+  async createBuyPlan(payload, transaction) {
+    return models.BuyPlans.create(payload, { transaction });
   },
 
   async findCurrentActiveSubscriptionWithPlan(userId, now) {
