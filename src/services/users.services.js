@@ -6,9 +6,12 @@ import { repository as rolesRepository } from "../repositories/roles.repositorie
 import { repository as sessionsRepository } from "../repositories/sessions.repositories.js";
 import { repository as tokensRepository } from "../repositories/tokens.repositories.js";
 import { repository as usersFollowsRepository } from "../repositories/users_follows.repositories.js";
+import { repository as subscriptionsRepository } from "../repositories/subscriptions.repositories.js";
+import { activateSubscriptionPayment } from "./subscriptions.services.js";
 import { RESPONSE_MESSAGES } from "../constants/response.constant.js";
 import { HTTP_STATUS } from "../constants/http_status.constants.js";
 import { responseTemplates } from "../utils/response.utils.js";
+import { message, toNumber } from "../utils/backend.utils.js";
 import { mapping as usersMapping } from "../models/mapping/users.mapping.js";
 import { STATUS_FLAG } from "../constants/status_flag.constants.js";
 import {
@@ -731,6 +734,90 @@ export const service = {
 
       await transaction.commit();
       return responseTemplates.setNoContentResponse();
+    } catch (error) {
+      await transaction.rollback();
+      console.error(error);
+      return responseTemplates.setInternalServerErrorResponse(
+        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+      );
+    }
+  },
+
+  async subscribePremium(req) {
+    const { plan_id } = req.body;
+    if (!plan_id) {
+      return responseTemplates.setBadRequestResponse(RESPONSE_MESSAGES.BAD_REQUEST);
+    }
+
+    const plan = await subscriptionsRepository.findPlanById(plan_id);
+    if (!plan) {
+      return responseTemplates.setNotFoundResponse(RESPONSE_MESSAGES.DATA_NOT_FOUND);
+    }
+
+    const planPrice = toNumber(plan.price);
+    if (planPrice <= 0) {
+      return responseTemplates.setBadRequestResponse(RESPONSE_MESSAGES.BAD_REQUEST);
+    }
+
+    const transaction = await sequelize.transaction();
+    try {
+      const findUser = await usersRepository.findByIdForUpdate(
+        req.user.id,
+        transaction,
+      );
+      if (findUser.code !== HTTP_STATUS.OK.code) {
+        await transaction.rollback();
+        return responseTemplates.setNotFoundResponse(
+          RESPONSE_MESSAGES.DATA_NOT_FOUND,
+        );
+      }
+
+      const user = findUser.result;
+      const currentWallet = toNumber(user.total_wallet);
+      if (currentWallet < planPrice) {
+        await transaction.rollback();
+        return responseTemplates.setBadRequestResponse(
+          message(
+            "ยอดเงินในกระเป๋าไม่เพียงพอ",
+            "Insufficient wallet balance.",
+          ),
+        );
+      }
+
+      const nextWallet = currentWallet - planPrice;
+      const updateWallet = await usersRepository.updateWallet(
+        user.id,
+        nextWallet,
+        transaction,
+      );
+      if (updateWallet.code !== HTTP_STATUS.OK.code) {
+        await transaction.rollback();
+        return responseTemplates.setInternalServerErrorResponse(
+          RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      const payment = await subscriptionsRepository.createBuyPlan({
+        user_id: req.user.id,
+        plan_id: plan.id,
+        payment_method: "WALLET",
+        amount: planPrice,
+        payment_status: "SUCCESSFUL",
+        slip_image_url: null,
+        created_by: req.user.id,
+      });
+
+      await activateSubscriptionPayment(payment, req.user.id, transaction);
+      await transaction.commit();
+
+      return responseTemplates.setCreatedResponse({
+        id: payment.id,
+        plan_id: plan.id,
+        plan_name: plan.name,
+        amount: planPrice,
+        payment_method: "WALLET",
+        payment_status: "SUCCESSFUL",
+      });
     } catch (error) {
       await transaction.rollback();
       console.error(error);

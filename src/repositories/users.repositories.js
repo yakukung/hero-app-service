@@ -374,4 +374,43 @@ export const repository = {
       );
     }
   },
+
+  async findByIdForUpdate(id, transaction) {
+    try {
+      const user = await sequelize.Users.findOne({
+        where: { id },
+        transaction,
+        lock: transaction.LOCK.UPDATE,
+      });
+      if (!user) {
+        return responseRepository.setResult(HTTP_STATUS.NOT_FOUND, null);
+      }
+      return responseRepository.setResult(HTTP_STATUS.OK, user);
+    } catch (error) {
+      console.log(error);
+      return responseRepository.setResult(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        null,
+      );
+    }
+  },
+
+  async updateWallet(userId, totalWallet, transaction) {
+    try {
+      const [affected] = await sequelize.Users.update(
+        { total_wallet: totalWallet },
+        { where: { id: userId }, transaction },
+      );
+      if (affected === 0) {
+        return responseRepository.setResult(HTTP_STATUS.NOT_FOUND, null);
+      }
+      return responseRepository.setResult(HTTP_STATUS.OK, { affected });
+    } catch (error) {
+      console.log(error);
+      return responseRepository.setResult(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        null,
+      );
+    }
+  },
 };

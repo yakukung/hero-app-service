@@ -24,3 +24,4 @@ router.put(
 );
 
 router.patch("/update-keyword/:id", authMiddleware, usersController.updateKeyword);
+router.post("/subscribe-premium", authMiddleware, usersController.subscribePremium);
