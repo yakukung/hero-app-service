@@ -9,11 +9,7 @@ const loadQuestions = (sheetId, transaction = undefined) =>
 
 const selectByIndexOrPosition = (items, value) => {
   const normalized = Number(value);
-  return (
-    items.find((item) => Number(item.index) === normalized) ||
-    items[normalized] ||
-    null
-  );
+  return items[normalized] || null;
 };
 
 const summarizeAnswers = async (userId, sheetId) => {
