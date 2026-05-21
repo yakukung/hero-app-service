@@ -310,10 +310,30 @@ export const service = {
         );
       }
 
+      const post = findPost.result;
+      const isPostOwner = post.user_id && post.user_id.toString() === user_id;
+      const isCommentOwner = post.comments?.some(
+        (c) => c.user_id?.toString() === user_id,
+      );
+
+      const commentAuthorId = post.comments?.find(
+        (c) => c.id === commentId,
+      )?.user_id?.toString();
+
+      const canDelete = isPostOwner || commentAuthorId === user_id;
+      if (!canDelete) {
+        await transaction.rollback();
+        return responseTemplates.setForbiddenResponse(
+          RESPONSE_MESSAGES.AUTHENTICATION_INVALID_ERROR,
+        );
+      }
+
+      const deleteUserId = commentAuthorId === user_id ? user_id : null;
+
       const removeComment = await postsRepository.removeComment(
         commentId,
         id,
-        user_id,
+        deleteUserId,
         transaction,
       );
 
