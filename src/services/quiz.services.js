@@ -166,4 +166,30 @@ export const service = {
       await summarizeAnswers(req.user.id, sheetId),
     );
   },
+
+  async getLeaderboard(req) {
+    const { sheetId } = req.params;
+    const sheet = await quizRepository.findVisibleSheetById(sheetId);
+
+    if (!sheet) {
+      return responseTemplates.setNotFoundResponse(RESPONSE_MESSAGES.DATA_NOT_FOUND);
+    }
+
+    const questions = await loadQuestions(sheetId);
+    const totalQuestions = questions.length;
+
+    if (totalQuestions === 0) {
+      return responseTemplates.setOKResponse({
+        total_questions: 0,
+        leaderboard: [],
+      });
+    }
+
+    const leaderboard = await quizRepository.findLeaderboardBySheetId(sheetId);
+
+    return responseTemplates.setOKResponse({
+      total_questions: totalQuestions,
+      leaderboard,
+    });
+  },
 };

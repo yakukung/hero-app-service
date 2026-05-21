@@ -6,3 +6,4 @@ export const router = express.Router();
 
 router.post("/results", authMiddleware, quizController.submitResult);
 router.get("/results/:sheetId", authMiddleware, quizController.getResult);
+router.get("/leaderboard/:sheetId", authMiddleware, quizController.getLeaderboard);
