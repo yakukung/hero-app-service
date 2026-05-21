@@ -311,50 +311,47 @@ export const service = {
       }
 
       const post = findPost.result;
-      const isPostOwner = post.user_id && post.user_id.toString() === user_id;
-      const isCommentOwner = post.comments?.some(
-        (c) => c.user_id?.toString() === user_id,
+      const postUserId = (
+        post.user_id || post.dataValues?.user_id
+      )?.toString();
+      const isPostOwner = postUserId === user_id;
+
+      const isCommentOwner = (post.comments || []).some(
+        (c) => (c.user_id || c.dataValues?.user_id)?.toString() === user_id,
       );
 
-      const commentAuthorId = post.comments?.find(
-        (c) => c.id === commentId,
-      )?.user_id?.toString();
-
-      const canDelete = isPostOwner || commentAuthorId === user_id;
-      if (!canDelete) {
+      if (!isPostOwner && !isCommentOwner) {
         await transaction.rollback();
         return responseTemplates.setForbiddenResponse(
           RESPONSE_MESSAGES.AUTHENTICATION_INVALID_ERROR,
         );
       }
 
-      const deleteUserId = commentAuthorId === user_id ? user_id : null;
-
       const removeComment = await postsRepository.removeComment(
         commentId,
         id,
-        deleteUserId,
+        user_id,
         transaction,
       );
 
-      switch (removeComment.code) {
-        case HTTP_STATUS.OK.code:
-          break;
-        case HTTP_STATUS.NOT_FOUND.code:
+      if (removeComment.code === HTTP_STATUS.NOT_FOUND.code && isPostOwner) {
+        const removeAsPostOwner = await postsRepository.removeComment(
+          commentId,
+          id,
+          null,
+          transaction,
+        );
+        if (removeAsPostOwner.code !== HTTP_STATUS.OK.code) {
           await transaction.rollback();
           return responseTemplates.setNotFoundResponse(
             RESPONSE_MESSAGES.DATA_NOT_FOUND,
           );
-        case HTTP_STATUS.BAD_REQUEST.code:
-          await transaction.rollback();
-          return responseTemplates.setBadRequestResponse(
-            RESPONSE_MESSAGES.BAD_REQUEST,
-          );
-        default:
-          await transaction.rollback();
-          return responseTemplates.setInternalServerErrorResponse(
-            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
-          );
+        }
+      } else if (removeComment.code !== HTTP_STATUS.OK.code) {
+        await transaction.rollback();
+        return responseTemplates.setNotFoundResponse(
+          RESPONSE_MESSAGES.DATA_NOT_FOUND,
+        );
       }
 
       await transaction.commit();

@@ -1,4 +1,5 @@
 import { HTTP_STATUS } from "../constants/http_status.constants.js";
+import { ACTIVE_INACTIVE_STATUS } from "../constants/db_schema.constants.js";
 import { models as sequelize } from "../models/sequelize/associations.js";
 import { responseRepository } from "../utils/response.utils.js";
 import { Sequelize } from "sequelize";
@@ -25,6 +26,8 @@ export const repository = {
             model: sequelize.PostsComments,
             as: "comments",
             attributes: ["id", "post_id", "user_id", "content", "created_at"],
+            where: { visible_flag: true },
+            required: false,
             include: [
               {
                 model: sequelize.Users,
@@ -81,6 +84,8 @@ export const repository = {
             model: sequelize.PostsComments,
             as: "comments",
             attributes: ["id", "post_id", "user_id", "content", "created_at"],
+            where: { visible_flag: true },
+            required: false,
             include: [
               {
                 model: sequelize.Users,
@@ -218,7 +223,7 @@ export const repository = {
   async findCommentsByPostId(postId, transaction) {
     try {
       const rows = await sequelize.PostsComments.findAndCountAll({
-        where: { post_id: postId },
+        where: { post_id: postId, visible_flag: true },
         include: [
           {
             model: sequelize.Users,
@@ -295,12 +300,18 @@ export const repository = {
       if (userId) {
         where.user_id = userId;
       }
-      const result = await sequelize.PostsComments.destroy({
-        where,
-        transaction,
-      });
+      const [affectedRows] = await sequelize.PostsComments.update(
+        {
+          visible_flag: false,
+          status_flag: ACTIVE_INACTIVE_STATUS.INACTIVE,
+          status_modified_at: new Date(),
+          updated_at: new Date(),
+          updated_by: userId || "SYSTEM",
+        },
+        { where, transaction },
+      );
 
-      if (result === 0) {
+      if (affectedRows === 0) {
         return responseRepository.setResult(HTTP_STATUS.NOT_FOUND, null);
       }
 
@@ -343,6 +354,8 @@ export const repository = {
             model: sequelize.PostsComments,
             as: "comments",
             attributes: ["id", "post_id", "user_id", "content", "created_at"],
+            where: { visible_flag: true },
+            required: false,
             include: [
               {
                 model: sequelize.Users,
@@ -412,6 +425,8 @@ export const repository = {
             model: sequelize.PostsComments,
             as: "comments",
             attributes: ["id", "post_id", "user_id", "content", "created_at"],
+            where: { visible_flag: true },
+            required: false,
             include: [
               {
                 model: sequelize.Users,
