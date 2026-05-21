@@ -347,6 +347,81 @@ export const service = {
       );
     }
   },
+  async getByUserId(req, res) {
+    const transaction = await sequelize.transaction();
+    try {
+      const { userId } = req.params;
+      const result = await postsRepository.findByUserId(userId, transaction);
+      switch (result.code) {
+        case HTTP_STATUS.OK.code:
+          break;
+        case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
+          return responseTemplates.setOKResponse({
+            total_items: 0,
+            posts: [],
+          });
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
+      }
+      const mappedData = await postsMapping.mapPosts(
+        result.result.data,
+        result.result.count,
+      );
+
+      await transaction.commit();
+      return responseTemplates.setOKResponse(mappedData);
+    } catch (error) {
+      await transaction.rollback();
+      console.log(error);
+      return responseTemplates.setInternalServerErrorResponse(
+        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+      );
+    }
+  },
+
+  async getSharedByUserId(req, res) {
+    const transaction = await sequelize.transaction();
+    try {
+      const { userId } = req.params;
+      const result = await postsRepository.findSharedByUserId(
+        userId,
+        transaction,
+      );
+      switch (result.code) {
+        case HTTP_STATUS.OK.code:
+          break;
+        case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
+          return responseTemplates.setOKResponse({
+            total_items: 0,
+            posts: [],
+          });
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
+      }
+      const mappedData = await postsMapping.mapPosts(
+        result.result.data,
+        result.result.count,
+      );
+
+      await transaction.commit();
+      return responseTemplates.setOKResponse(mappedData);
+    } catch (error) {
+      await transaction.rollback();
+      console.log(error);
+      return responseTemplates.setInternalServerErrorResponse(
+        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+      );
+    }
+  },
+
   async share(req, res) {
     const transaction = await sequelize.transaction();
     try {

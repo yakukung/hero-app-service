@@ -5,6 +5,8 @@ import { authMiddleware } from "../middleware/auth.middleware.js";
 export const router = express.Router();
 
 router.get("/", postsController.getAll);
+router.get("/user/:userId", postsController.getByUserId);
+router.get("/user/:userId/shared", postsController.getSharedByUserId);
 router.get("/:id", postsController.getById);
 router.post("/create", authMiddleware, postsController.create);
 router.post("/:id/like", authMiddleware, postsController.like);

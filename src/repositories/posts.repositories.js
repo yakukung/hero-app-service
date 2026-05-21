@@ -322,6 +322,128 @@ export const repository = {
       );
     }
   },
+  async findByUserId(userId, transaction) {
+    try {
+      const rows = await sequelize.Posts.findAndCountAll({
+        include: [
+          {
+            model: sequelize.Users,
+            as: "author",
+          },
+          {
+            model: sequelize.Sheets,
+            as: "sheet",
+          },
+          {
+            model: sequelize.PostsLikes,
+            as: "likes",
+            attributes: ["user_id"],
+          },
+          {
+            model: sequelize.PostsComments,
+            as: "comments",
+            attributes: ["id", "post_id", "user_id", "content", "created_at"],
+            include: [
+              {
+                model: sequelize.Users,
+                as: "user",
+                attributes: ["id", "username", "profile_image"],
+              },
+            ],
+          },
+          {
+            model: sequelize.PostsShares,
+            as: "shares",
+            attributes: ["id", "post_id", "user_id", "created_at"],
+          },
+        ],
+        where: { user_id: userId },
+        distinct: true,
+        transaction,
+      });
+      if (rows.count === 0) {
+        return responseRepository.setResult(HTTP_STATUS.NOT_FOUND, null);
+      }
+
+      return responseRepository.setResult(HTTP_STATUS.OK, {
+        count: rows.count,
+        data: rows.rows,
+      });
+    } catch (error) {
+      console.log(error);
+      return responseRepository.setResult(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        null,
+      );
+    }
+  },
+
+  async findSharedByUserId(userId, transaction) {
+    try {
+      const postIds = await sequelize.PostsShares.findAll({
+        attributes: ["post_id"],
+        where: { user_id: userId },
+        group: ["post_id"],
+        transaction,
+      });
+
+      if (postIds.length === 0) {
+        return responseRepository.setResult(HTTP_STATUS.NOT_FOUND, null);
+      }
+
+      const ids = postIds.map((p) => p.post_id);
+
+      const rows = await sequelize.Posts.findAndCountAll({
+        include: [
+          {
+            model: sequelize.Users,
+            as: "author",
+          },
+          {
+            model: sequelize.Sheets,
+            as: "sheet",
+          },
+          {
+            model: sequelize.PostsLikes,
+            as: "likes",
+            attributes: ["user_id"],
+          },
+          {
+            model: sequelize.PostsComments,
+            as: "comments",
+            attributes: ["id", "post_id", "user_id", "content", "created_at"],
+            include: [
+              {
+                model: sequelize.Users,
+                as: "user",
+                attributes: ["id", "username", "profile_image"],
+              },
+            ],
+          },
+          {
+            model: sequelize.PostsShares,
+            as: "shares",
+            attributes: ["id", "post_id", "user_id", "created_at"],
+          },
+        ],
+        where: { id: ids },
+        distinct: true,
+        transaction,
+      });
+
+      return responseRepository.setResult(HTTP_STATUS.OK, {
+        count: rows.count,
+        data: rows.rows,
+      });
+    } catch (error) {
+      console.log(error);
+      return responseRepository.setResult(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        null,
+      );
+    }
+  },
+
   async findShare(userId, postId, transaction) {
     try {
       const result = await sequelize.PostsShares.findOne({
