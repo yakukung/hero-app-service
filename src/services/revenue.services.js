@@ -14,6 +14,20 @@ const revenueWhere = {
 };
 
 const monthKey = (date) => new Date(date).toISOString().slice(0, 7);
+const dateKey = (date) => new Date(date).toISOString().slice(0, 10);
+const todayKey = () => new Date().toISOString().slice(0, 10);
+const currentMonthKey = () => new Date().toISOString().slice(0, 7);
+
+const mapPayment = (payment) => ({
+  id: payment.id,
+  sheet_id: payment.sheet_id,
+  sheet_title: payment.sheet?.title,
+  amount: toNumber(payment.amount) * CREATOR_SHARE,
+  gross_amount: toNumber(payment.amount),
+  buyer_id: payment.user_id,
+  buyer_name: payment.user?.username,
+  created_at: payment.created_at,
+});
 
 const summarizeMonthly = (payments) => {
   const groups = new Map();
@@ -42,25 +56,58 @@ export const service = {
     );
 
     const payments = rows.map(toPlain);
-    const daily = payments.map((payment) => ({
-      id: payment.id,
-      sheet_id: payment.sheet_id,
-      sheet_title: payment.sheet?.title,
-      amount: toNumber(payment.amount) * CREATOR_SHARE,
-      gross_amount: toNumber(payment.amount),
-      buyer_id: payment.user_id,
-      buyer_name: payment.user?.username,
-      created_at: payment.created_at,
-    }));
+    const allItems = payments.map(mapPayment);
+    const total = allItems.reduce((sum, item) => sum + item.amount, 0);
+
+    const today = todayKey();
+    const thisMonth = currentMonthKey();
+
+    const dailyItems = allItems.filter(
+      (item) => dateKey(item.created_at) === today,
+    );
+
+    const monthlyItems = allItems.filter(
+      (item) => monthKey(item.created_at) === thisMonth,
+    );
+
+    const groupByDate = {};
+    for (const item of monthlyItems) {
+      const key = dateKey(item.created_at);
+      if (!groupByDate[key]) {
+        groupByDate[key] = { date: key, total: 0, count: 0, items: [] };
+      }
+      groupByDate[key].total += item.amount;
+      groupByDate[key].count += 1;
+      groupByDate[key].items.push(item);
+    }
+    const groups = Object.values(groupByDate).sort((a, b) =>
+      b.date.localeCompare(a.date),
+    );
+    const monthlyTotal = monthlyItems.reduce((s, i) => s + i.amount, 0);
+    const monthlyCount = monthlyItems.length;
+
+    const trendMap = {};
+    for (const item of monthlyItems) {
+      const key = dateKey(item.created_at);
+      trendMap[key] = (trendMap[key] || 0) + item.amount;
+    }
+    const trend = Object.entries(trendMap)
+      .map(([date, amt]) => ({ date, total: Math.round(amt * 100) / 100 }))
+      .sort((a, b) => a.date.localeCompare(b.date));
 
     return responseTemplates.setOKResponse({
-      total: daily.reduce((sum, item) => sum + item.amount, 0),
-      daily,
-      monthly: summarizeMonthly(payments).map((item) => ({
-        month: item.month,
-        amount: item.creator_share,
-        gross: item.gross,
-      })),
+      total,
+      daily: {
+        count: dailyItems.length,
+        total: dailyItems.reduce((s, i) => s + i.amount, 0),
+        items: dailyItems,
+      },
+      monthly: {
+        count: monthlyCount,
+        total: monthlyTotal,
+        groups,
+        trend,
+      },
     });
   },
 
