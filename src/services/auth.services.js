@@ -26,6 +26,7 @@ import {
   sendResetPasswordEmail,
   sendVerificationEmail,
 } from "../utils/mail.utils.js";
+import { validateStrongPassword } from "../utils/validation.utils.js";
 
 export const service = {
   async register(req, res) {
@@ -712,6 +713,14 @@ export const service = {
         await transaction.rollback();
         return responseTemplates.setBadRequestResponse(
           RESPONSE_MESSAGES.PASSWORD_NOT_MATCH_ERROR,
+        );
+      }
+
+      const passwordValidation = validateStrongPassword(new_password);
+      if (!passwordValidation.valid) {
+        await transaction.rollback();
+        return responseTemplates.setBadRequestResponse(
+          { message: passwordValidation.message },
         );
       }
 
