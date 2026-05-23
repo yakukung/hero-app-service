@@ -324,4 +324,18 @@ export const repository = {
       where: { id },
     });
   },
+
+  async findCommentsByPostIdForAdmin(postId) {
+    return models.PostsComments.findAndCountAll({
+      where: { post_id: postId },
+      include: [
+        {
+          model: models.Users,
+          as: "user",
+          attributes: ["id", "username", "profile_image"],
+        },
+      ],
+      order: [["created_at", "DESC"]],
+    });
+  },
 };

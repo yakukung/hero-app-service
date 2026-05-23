@@ -20,6 +20,7 @@ router.post("/reports/:id/action", adminController.reportAction);
 router.patch("/sheets/:id/status", adminController.updateSheetStatus);
 router.patch("/posts/:id/status", adminController.updatePostStatus);
 router.patch("/comments/:id/status", adminController.updateCommentStatus);
+router.get("/posts/:id/comments", adminController.getPostComments);
 router.get("/revenue", adminController.getRevenue);
 
 router.patch("/users/:id/username", adminController.updateUserUsername);

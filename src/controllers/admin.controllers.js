@@ -131,6 +131,16 @@ export const controller = {
     }
   },
 
+  async getPostComments(req, res) {
+    try {
+      const result = await adminService.getPostComments(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
+
   async getRevenue(req, res) {
     try {
       const result = await adminService.getRevenue(req, res);

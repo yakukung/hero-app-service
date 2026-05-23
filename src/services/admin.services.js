@@ -5,6 +5,7 @@ import { RESPONSE_MESSAGES } from "../constants/response.constant.js";
 import { repository as adminRepository } from "../repositories/admin.repositories.js";
 import { repository as usersRepository } from "../repositories/users.repositories.js";
 import { mapping as sheetsMapping } from "../models/mapping/sheets.mapping.js";
+import { mapping as postsCommentsMapping } from "../models/mapping/posts_comments.mapping.js";
 import { activateSubscriptionPayment } from "./subscriptions.services.js";
 import { service as revenueService } from "./revenue.services.js";
 import {
@@ -629,6 +630,32 @@ export const service = {
       status_flag,
       visible_flag: status_flag === "ACTIVE",
     });
+  },
+
+  async getPostComments(req) {
+    try {
+      const { id } = req.params;
+      const result = await adminRepository.findCommentsByPostIdForAdmin(id);
+
+      if (result.count === 0) {
+        return responseTemplates.setOKResponse({
+          total_items: 0,
+          data: [],
+        });
+      }
+
+      const mappedData = await postsCommentsMapping.mapPostsCommentsForAdmin(
+        result.rows,
+        result.count,
+      );
+
+      return responseTemplates.setOKResponse(mappedData);
+    } catch (error) {
+      console.error(error);
+      return responseTemplates.setInternalServerErrorResponse(
+        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+      );
+    }
   },
 
   async getRevenue(req, res) {

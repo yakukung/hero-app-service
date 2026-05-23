@@ -17,6 +17,24 @@ export const mapping = {
       console.log(error);
     }
   },
+
+  async mapPostsCommentsForAdmin(data, count) {
+    try {
+      let result = [];
+      for (let index = 0; index < data.length; index++) {
+        const element = data[index].dataValues;
+        const mapData = await this.mapPostCommentForAdmin(element);
+        result.push(mapData);
+      }
+      return {
+        total_items: parseInt(count),
+        data: result,
+      };
+    } catch (error) {
+      console.log(error);
+    }
+  },
+
   async mapPostComment(data) {
     const rawUser =
       data.user && data.user.dataValues ? data.user.dataValues : data.user;
@@ -27,6 +45,22 @@ export const mapping = {
       user_id: data.user_id,
       user: user,
       content: data.content,
+      created_at: data.created_at,
+    };
+  },
+
+  async mapPostCommentForAdmin(data) {
+    const rawUser =
+      data.user && data.user.dataValues ? data.user.dataValues : data.user;
+    const user = rawUser ? await mapUserResponse.mapUser(rawUser) : null;
+    return {
+      id: data.id,
+      post_id: data.post_id,
+      user_id: data.user_id,
+      user: user,
+      content: data.content,
+      visible_flag: data.visible_flag,
+      status_flag: data.status_flag,
       created_at: data.created_at,
     };
   },
