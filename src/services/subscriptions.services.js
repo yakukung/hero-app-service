@@ -1,6 +1,10 @@
 import { RESPONSE_MESSAGES } from "../constants/response.constant.js";
 import { responseTemplates } from "../utils/response.utils.js";
+import { HTTP_STATUS } from "../constants/http_status.constants.js";
+import { ROLE_NAMES } from "../constants/roles.constants.js";
 import { repository as subscriptionsRepository } from "../repositories/subscriptions.repositories.js";
+import { repository as usersRepository } from "../repositories/users.repositories.js";
+import { repository as rolesRepository } from "../repositories/roles.repositories.js";
 import {
   addBillingInterval,
   message,
@@ -80,21 +84,32 @@ export const activateSubscriptionPayment = async (
       },
       transaction,
     );
-    return activeSubscription;
+  } else {
+    await subscriptionsRepository.createUserPlan(
+      {
+        user_id: buyPlan.user_id,
+        plan_id: buyPlan.plan_id,
+        start_at: now,
+        expires_at: expiresAt,
+        auto_renew: false,
+        status_flag: "ACTIVE",
+        created_by: actorId,
+      },
+      transaction,
+    );
   }
 
-  return subscriptionsRepository.createUserPlan(
-    {
-      user_id: buyPlan.user_id,
-      plan_id: buyPlan.plan_id,
-      start_at: now,
-      expires_at: expiresAt,
-      auto_renew: false,
-      status_flag: "ACTIVE",
-      created_by: actorId,
-    },
+  const premiumRole = await rolesRepository.findByName(
+    ROLE_NAMES.PREMIUM_MEMBER,
     transaction,
   );
+  if (premiumRole.code === HTTP_STATUS.OK.code) {
+    await usersRepository.updateRole(
+      buyPlan.user_id,
+      premiumRole.result.id,
+      transaction,
+    );
+  }
 };
 
 export const service = {
@@ -158,6 +173,22 @@ export const service = {
       );
 
     if (!subscription) {
+      const premiumRole = await rolesRepository.findByName(
+        ROLE_NAMES.PREMIUM_MEMBER,
+      );
+      if (
+        premiumRole.code === HTTP_STATUS.OK.code &&
+        req.user.role_id === premiumRole.result.id
+      ) {
+        const memberRole = await rolesRepository.findByName(ROLE_NAMES.MEMBER);
+        if (memberRole.code === HTTP_STATUS.OK.code) {
+          await usersRepository.updateRole(
+            req.user.id,
+            memberRole.result.id,
+          );
+        }
+      }
+
       return responseTemplates.setOKResponse({
         is_premium: false,
         plan_id: null,

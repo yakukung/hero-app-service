@@ -1,0 +1,5 @@
+export const ROLE_NAMES = {
+  ADMIN: "ADMIN",
+  MEMBER: "MEMBER",
+  PREMIUM_MEMBER: "PREMIUM_MEMBER",
+};
