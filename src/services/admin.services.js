@@ -1,6 +1,9 @@
+import bcrypt from "bcrypt";
 import { sequelize } from "../configs/sequelize.configs.js";
+import { HTTP_STATUS } from "../constants/http_status.constants.js";
 import { RESPONSE_MESSAGES } from "../constants/response.constant.js";
 import { repository as adminRepository } from "../repositories/admin.repositories.js";
+import { repository as usersRepository } from "../repositories/users.repositories.js";
 import { mapping as sheetsMapping } from "../models/mapping/sheets.mapping.js";
 import { activateSubscriptionPayment } from "./subscriptions.services.js";
 import { service as revenueService } from "./revenue.services.js";
@@ -630,5 +633,96 @@ export const service = {
 
   async getRevenue(req, res) {
     return revenueService.getAdminRevenue(req, res);
+  },
+
+  async updateUserUsername(req) {
+    const { id } = req.params;
+    const { username } = req.body;
+
+    const findUserByUsername = await usersRepository.findByUsername(username);
+    switch (findUserByUsername.code) {
+      case HTTP_STATUS.OK.code:
+        return responseTemplates.setConflictResponse(
+          RESPONSE_MESSAGES.USERNAME_ALREADY_ERROR,
+        );
+      case HTTP_STATUS.NOT_FOUND.code:
+        break;
+      default:
+        return responseTemplates.setInternalServerErrorResponse(
+          RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+        );
+    }
+
+    const updateResult = await usersRepository.updateUsername(id, username);
+    switch (updateResult.code) {
+      case HTTP_STATUS.OK.code:
+        return responseTemplates.setNoContentResponse();
+      case HTTP_STATUS.NOT_FOUND.code:
+        return responseTemplates.setNotFoundResponse(
+          RESPONSE_MESSAGES.DATA_NOT_FOUND,
+        );
+      default:
+        return responseTemplates.setInternalServerErrorResponse(
+          RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+        );
+    }
+  },
+
+  async updateUserEmail(req) {
+    const { id } = req.params;
+    const { email } = req.body;
+
+    const updateResult = await usersRepository.updateEmail(id, email);
+    switch (updateResult.code) {
+      case HTTP_STATUS.OK.code:
+        return responseTemplates.setNoContentResponse();
+      case HTTP_STATUS.NOT_FOUND.code:
+        return responseTemplates.setNotFoundResponse(
+          RESPONSE_MESSAGES.DATA_NOT_FOUND,
+        );
+      default:
+        return responseTemplates.setInternalServerErrorResponse(
+          RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+        );
+    }
+  },
+
+  async updateUserPassword(req) {
+    const { id } = req.params;
+    let { new_password } = req.body;
+
+    const findUserById = await usersRepository.findById(id);
+    switch (findUserById.code) {
+      case HTTP_STATUS.OK.code:
+        break;
+      case HTTP_STATUS.NOT_FOUND.code:
+        return responseTemplates.setNotFoundResponse(
+          RESPONSE_MESSAGES.DATA_NOT_FOUND,
+        );
+      default:
+        return responseTemplates.setInternalServerErrorResponse(
+          RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+        );
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    new_password = await bcrypt.hash(new_password, salt);
+
+    const updateResult = await usersRepository.updatePassword(
+      id,
+      new_password,
+    );
+    switch (updateResult.code) {
+      case HTTP_STATUS.OK.code:
+        return responseTemplates.setNoContentResponse();
+      case HTTP_STATUS.NOT_FOUND.code:
+        return responseTemplates.setNotFoundResponse(
+          RESPONSE_MESSAGES.DATA_NOT_FOUND,
+        );
+      default:
+        return responseTemplates.setInternalServerErrorResponse(
+          RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+        );
+    }
   },
 };

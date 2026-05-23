@@ -140,4 +140,34 @@ export const controller = {
       return res.status(500).json({ message: "Internal Server Error" });
     }
   },
+
+  async updateUserUsername(req, res) {
+    try {
+      const result = await adminService.updateUserUsername(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
+
+  async updateUserEmail(req, res) {
+    try {
+      const result = await adminService.updateUserEmail(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
+
+  async updateUserPassword(req, res) {
+    try {
+      const result = await adminService.updateUserPassword(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
 };

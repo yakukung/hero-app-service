@@ -21,3 +21,7 @@ router.patch("/sheets/:id/status", adminController.updateSheetStatus);
 router.patch("/posts/:id/status", adminController.updatePostStatus);
 router.patch("/comments/:id/status", adminController.updateCommentStatus);
 router.get("/revenue", adminController.getRevenue);
+
+router.patch("/users/:id/username", adminController.updateUserUsername);
+router.patch("/users/:id/email", adminController.updateUserEmail);
+router.patch("/users/:id/password", adminController.updateUserPassword);
