@@ -459,7 +459,7 @@ export const service = {
       const { reference_table, action } = req.body;
       const normalizedTable = String(reference_table || "").toLowerCase();
       const config = reportTargets[normalizedTable];
-      const allowedActions = ["HIDE", "RESTORE", "DELETE", "SUSPEND_USER", "SUSPEND_TEMPORARY", "SUSPEND_PERMANENT"];
+      const allowedActions = ["ACTIVE", "HIDE", "RESTORE", "DELETE", "SUSPEND_USER", "SUSPEND_TEMPORARY", "SUSPEND_PERMANENT"];
 
       if (!config || !allowedActions.includes(action)) {
         await transaction.rollback();
@@ -484,6 +484,7 @@ export const service = {
       const targetId = report[config.reportKey];
       const isSuspendAction = action === "SUSPEND_USER" || action === "SUSPEND_TEMPORARY" || action === "SUSPEND_PERMANENT";
       const updateByAction = {
+        ACTIVE: { status_flag: "ACTIVE" },
         HIDE: { visible_flag: false, status_flag: "INACTIVE" },
         DELETE: { visible_flag: false, status_flag: "INACTIVE" },
         RESTORE: { visible_flag: true, status_flag: "ACTIVE" },
