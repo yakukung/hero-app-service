@@ -216,6 +216,17 @@ export const repository = {
           as: "reporter",
           attributes: ["id", "username"],
         },
+        {
+          model: models.Posts,
+          as: "post",
+          include: [
+            {
+              model: models.Users,
+              as: "author",
+              attributes: ["id", "username"],
+            },
+          ],
+        },
       ],
       order: [["created_at", "DESC"]],
     });
@@ -229,6 +240,17 @@ export const repository = {
           as: "reporter",
           attributes: ["id", "username"],
         },
+        {
+          model: models.Sheets,
+          as: "sheet",
+          include: [
+            {
+              model: models.Users,
+              as: "author",
+              attributes: ["id", "username"],
+            },
+          ],
+        },
       ],
       order: [["created_at", "DESC"]],
     });
@@ -241,6 +263,11 @@ export const repository = {
           model: models.Users,
           as: "reporter",
           attributes: ["id", "username"],
+        },
+        {
+          model: models.Users,
+          as: "reportedUser",
+          attributes: ["id", "username", "email", "status_flag"],
         },
       ],
       order: [["created_at", "DESC"]],

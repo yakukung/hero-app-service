@@ -31,7 +31,7 @@ const reportTargets = {
 
 const mapAdminReport = (row, referenceTable, referenceKey) => {
   const report = toPlain(row);
-  return {
+  const result = {
     id: report.id,
     reference_table: referenceTable,
     reference_id: report[referenceKey],
@@ -43,6 +43,34 @@ const mapAdminReport = (row, referenceTable, referenceKey) => {
     created_at: report.created_at,
     updated_at: report.updated_at,
   };
+
+  if (referenceTable === "sheets" && report.sheet) {
+    const sheet = toPlain(report.sheet);
+    result.reference_data = {
+      title: sheet.title,
+      price: sheet.price,
+      status_flag: sheet.status_flag,
+      author_name: sheet.author?.username,
+      author_id: sheet.author_id,
+    };
+  } else if (referenceTable === "posts" && report.post) {
+    const post = toPlain(report.post);
+    result.reference_data = {
+      content: post.content,
+      status_flag: post.status_flag,
+      author_name: post.author?.username,
+      author_id: post.user_id,
+    };
+  } else if (referenceTable === "users" && report.reportedUser) {
+    const user = toPlain(report.reportedUser);
+    result.reference_data = {
+      username: user.username,
+      email: user.email,
+      status_flag: user.status_flag,
+    };
+  }
+
+  return result;
 };
 
 const mapAdminSubscription = (row) => {
