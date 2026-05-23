@@ -459,7 +459,7 @@ export const service = {
       const { reference_table, action } = req.body;
       const normalizedTable = String(reference_table || "").toLowerCase();
       const config = reportTargets[normalizedTable];
-      const allowedActions = ["HIDE", "RESTORE", "DELETE", "SUSPEND_USER"];
+      const allowedActions = ["HIDE", "RESTORE", "DELETE", "SUSPEND_USER", "SUSPEND_TEMPORARY", "SUSPEND_PERMANENT"];
 
       if (!config || !allowedActions.includes(action)) {
         await transaction.rollback();
@@ -482,19 +482,22 @@ export const service = {
       }
 
       const targetId = report[config.reportKey];
+      const isSuspendAction = action === "SUSPEND_USER" || action === "SUSPEND_TEMPORARY" || action === "SUSPEND_PERMANENT";
       const updateByAction = {
         HIDE: { visible_flag: false, status_flag: "INACTIVE" },
         DELETE: { visible_flag: false, status_flag: "INACTIVE" },
         RESTORE: { visible_flag: true, status_flag: "ACTIVE" },
         SUSPEND_USER: { visible_flag: false, status_flag: "SUSPENDED" },
+        SUSPEND_TEMPORARY: { visible_flag: false, status_flag: "SUSPENDED" },
+        SUSPEND_PERMANENT: { visible_flag: false, status_flag: "TERMINATED" },
       };
 
-      if (action === "SUSPEND_USER" && normalizedTable !== "users") {
+      if (isSuspendAction && normalizedTable !== "users") {
         await transaction.rollback();
         return responseTemplates.setBadRequestResponse(
           message(
-            "SUSPEND_USER ใช้ได้กับ user report เท่านั้น",
-            "SUSPEND_USER only applies to user reports.",
+            "ระงับผู้ใช้ใช้ได้กับรายงานโปรไฟล์เท่านั้น",
+            "Suspend action only applies to user reports.",
           ),
         );
       }
