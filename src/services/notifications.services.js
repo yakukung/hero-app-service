@@ -3,12 +3,21 @@ import { repository as notificationsRepository } from "../repositories/notificat
 import { responseTemplates } from "../utils/response.utils.js";
 import { sortByCreatedAtDesc, toPlain } from "../utils/backend.utils.js";
 
+const _statusLabel = (flag) => {
+  switch (flag) {
+    case 'PENDING': return 'รอตรวจ';
+    case 'RESOLVED': return 'จัดการแล้ว';
+    case 'REJECTED': return 'ปฏิเสธ';
+    default: return flag;
+  }
+};
+
 const mapReportNotification = (row, referenceTable, referenceKey) => {
   const report = toPlain(row);
   return {
     id: `${referenceTable}:${report.id}`,
-    title: "สถานะรายงาน",
-    message: `รายงานของคุณอยู่ในสถานะ ${report.status_flag}`,
+    title: "การแจ้งเตือนรายงาน",
+    message: `รายงานของคุณอยู่ในสถานะ ${_statusLabel(report.status_flag)}`,
     reference_table: referenceTable,
     reference_id: report[referenceKey],
     report_id: report.id,
