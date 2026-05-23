@@ -414,6 +414,25 @@ export const repository = {
     }
   },
 
+  async updateRole(userId, roleId, transaction) {
+    try {
+      const [affected] = await sequelize.Users.update(
+        { role_id: roleId },
+        { where: { id: userId }, transaction },
+      );
+      if (affected === 0) {
+        return responseRepository.setResult(HTTP_STATUS.NOT_FOUND, null);
+      }
+      return responseRepository.setResult(HTTP_STATUS.OK, { affected });
+    } catch (error) {
+      console.log(error);
+      return responseRepository.setResult(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        null,
+      );
+    }
+  },
+
   async updateWallet(userId, totalWallet, transaction) {
     try {
       const [affected] = await sequelize.Users.update(

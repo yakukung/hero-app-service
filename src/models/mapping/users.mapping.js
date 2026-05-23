@@ -20,6 +20,8 @@ export const mapping = {
   },
   async mapUser(data) {
     try {
+      const rawRole =
+        data.roles?.dataValues ?? data.roles ?? null;
       return {
         id: data.id,
         username: data.username,
@@ -27,6 +29,7 @@ export const mapping = {
         profile_image: data.profile_image,
         auth_provider: data.auth_provider,
         role_id: data.role_id,
+        role_name: rawRole?.name || null,
         point: data.point,
         keyword: data.keyword,
         wallet: data.total_wallet,
