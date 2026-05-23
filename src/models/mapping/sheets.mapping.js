@@ -95,6 +95,7 @@ export const mapping = {
         id: data.id,
         author_id: data.author_id,
         author_name: author.username,
+        user_avatar: author.profile_image,
         title: data.title,
         description: data.description,
         rating: data.rating,
