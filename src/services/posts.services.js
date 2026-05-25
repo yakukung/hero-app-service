@@ -439,6 +439,85 @@ export const service = {
     }
   },
 
+  async update(req, res) {
+    const transaction = await sequelize.transaction();
+    try {
+      const { id } = req.params;
+      const { content, sheet_id } = req.body;
+      const user_id = req.user.id;
+
+      if (!content?.trim()) {
+        await transaction.rollback();
+        return responseTemplates.setBadRequestResponse(
+          RESPONSE_MESSAGES.BAD_REQUEST,
+        );
+      }
+
+      const findPost = await postsRepository.findById(id, transaction);
+      if (findPost.code !== HTTP_STATUS.OK.code) {
+        await transaction.rollback();
+        return responseTemplates.setNotFoundResponse(
+          RESPONSE_MESSAGES.DATA_NOT_FOUND,
+        );
+      }
+
+      const result = await postsRepository.updatePost(
+        id,
+        user_id,
+        { content, sheet_id },
+        transaction,
+      );
+      if (result.code !== HTTP_STATUS.OK.code) {
+        await transaction.rollback();
+        return responseTemplates.setNotFoundResponse(
+          RESPONSE_MESSAGES.DATA_NOT_FOUND,
+        );
+      }
+
+      await transaction.commit();
+      return responseTemplates.setNoContentResponse();
+    } catch (error) {
+      await transaction.rollback();
+      console.log(error);
+      return responseTemplates.setInternalServerErrorResponse(
+        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+      );
+    }
+  },
+
+  async delete(req, res) {
+    const transaction = await sequelize.transaction();
+    try {
+      const { id } = req.params;
+      const user_id = req.user.id;
+
+      const findPost = await postsRepository.findById(id, transaction);
+      if (findPost.code !== HTTP_STATUS.OK.code) {
+        await transaction.rollback();
+        return responseTemplates.setNotFoundResponse(
+          RESPONSE_MESSAGES.DATA_NOT_FOUND,
+        );
+      }
+
+      const result = await postsRepository.deletePost(id, user_id, transaction);
+      if (result.code !== HTTP_STATUS.OK.code) {
+        await transaction.rollback();
+        return responseTemplates.setNotFoundResponse(
+          RESPONSE_MESSAGES.DATA_NOT_FOUND,
+        );
+      }
+
+      await transaction.commit();
+      return responseTemplates.setNoContentResponse();
+    } catch (error) {
+      await transaction.rollback();
+      console.log(error);
+      return responseTemplates.setInternalServerErrorResponse(
+        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+      );
+    }
+  },
+
   async share(req, res) {
     const transaction = await sequelize.transaction();
     try {

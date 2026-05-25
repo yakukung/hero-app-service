@@ -510,6 +510,59 @@ export const repository = {
       );
     }
   },
+  async updatePost(postId, userId, data, transaction) {
+    try {
+      const [affectedRows] = await sequelize.Posts.update(
+        {
+          content: data.content,
+          sheet_id: data.sheet_id ?? null,
+          updated_at: new Date(),
+          updated_by: userId,
+        },
+        { where: { id: postId, user_id: userId }, transaction },
+      );
+
+      if (affectedRows === 0) {
+        return responseRepository.setResult(HTTP_STATUS.NOT_FOUND, null);
+      }
+
+      return responseRepository.setResult(HTTP_STATUS.OK, null);
+    } catch (error) {
+      console.error(error);
+      return responseRepository.setResult(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        null,
+      );
+    }
+  },
+
+  async deletePost(postId, userId, transaction) {
+    try {
+      const [affectedRows] = await sequelize.Posts.update(
+        {
+          visible_flag: false,
+          status_flag: ACTIVE_INACTIVE_STATUS.INACTIVE,
+          status_modified_at: new Date(),
+          updated_at: new Date(),
+          updated_by: userId,
+        },
+        { where: { id: postId, user_id: userId }, transaction },
+      );
+
+      if (affectedRows === 0) {
+        return responseRepository.setResult(HTTP_STATUS.NOT_FOUND, null);
+      }
+
+      return responseRepository.setResult(HTTP_STATUS.OK, null);
+    } catch (error) {
+      console.error(error);
+      return responseRepository.setResult(
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        null,
+      );
+    }
+  },
+
   async removeShare(userId, postId, transaction) {
     try {
       const result = await sequelize.PostsShares.destroy({

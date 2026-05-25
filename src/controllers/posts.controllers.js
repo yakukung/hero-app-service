@@ -73,6 +73,26 @@ export const controller = {
       return res.status(500).json({ message: "Internal Server Error" });
     }
   },
+  async update(req, res) {
+    try {
+      const result = await postsService.update(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
+
+  async delete(req, res) {
+    try {
+      const result = await postsService.delete(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
+
   async getByUserId(req, res) {
     try {
       const result = await postsService.getByUserId(req, res);
