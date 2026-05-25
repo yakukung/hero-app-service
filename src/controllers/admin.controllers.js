@@ -131,6 +131,26 @@ export const controller = {
     }
   },
 
+  async getSheetReviews(req, res) {
+    try {
+      const result = await adminService.getSheetReviews(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
+
+  async updateReviewStatus(req, res) {
+    try {
+      const result = await adminService.updateReviewStatus(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
+
   async getPostComments(req, res) {
     try {
       const result = await adminService.getPostComments(req, res);

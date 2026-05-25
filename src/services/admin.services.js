@@ -6,6 +6,7 @@ import { repository as adminRepository } from "../repositories/admin.repositorie
 import { repository as usersRepository } from "../repositories/users.repositories.js";
 import { mapping as sheetsMapping } from "../models/mapping/sheets.mapping.js";
 import { mapping as postsCommentsMapping } from "../models/mapping/posts_comments.mapping.js";
+import { models } from "../models/sequelize/associations.js";
 import { activateSubscriptionPayment } from "./subscriptions.services.js";
 import { service as revenueService } from "./revenue.services.js";
 import {
@@ -751,5 +752,95 @@ export const service = {
           RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
         );
     }
+  },
+
+  async getSheetReviews(req) {
+    const { id } = req.params;
+
+    const reviews = await models.SheetsReviews.findAll({
+      where: { sheet_id: id },
+      include: [{
+        model: models.Users,
+        as: "user",
+        attributes: ["id", "username", "profile_image"],
+      }],
+      order: [["created_at", "DESC"]],
+    });
+
+    const mapped = reviews.map((row) => {
+      const r = toPlain(row);
+      return {
+        id: r.id,
+        sheet_id: r.sheet_id,
+        user_id: r.user_id,
+        username: r.user?.username,
+        profile_image: r.user?.profile_image,
+        content: r.content,
+        score: r.score,
+        created_at: r.created_at,
+        updated_at: r.updated_at,
+        status_flag: r.status_flag,
+        visible_flag: r.visible_flag,
+      };
+    });
+
+    return responseTemplates.setOKResponse({ reviews: mapped });
+  },
+
+  async updateReviewStatus(req) {
+    const { id, reviewId } = req.params;
+    const { status_flag } = req.body;
+
+    if (!allowedContentStatuses.includes(status_flag)) {
+      return responseTemplates.setBadRequestResponse(
+        RESPONSE_MESSAGES.BAD_REQUEST,
+      );
+    }
+
+    const review = await models.SheetsReviews.findOne({
+      where: { id: reviewId, sheet_id: id },
+    });
+
+    if (!review) {
+      return responseTemplates.setNotFoundResponse(
+        RESPONSE_MESSAGES.DATA_NOT_FOUND,
+      );
+    }
+
+    await models.SheetsReviews.update(
+      {
+        status_flag,
+        visible_flag: status_flag === "ACTIVE",
+        updated_by: req.user.id,
+        status_modified_at: new Date(),
+      },
+      { where: { id: reviewId } },
+    );
+
+    const allReviews = await models.SheetsReviews.findAll({
+      attributes: ["score"],
+      where: {
+        sheet_id: id,
+        visible_flag: true,
+        status_flag: "ACTIVE",
+      },
+    });
+
+    const rating =
+      allReviews.length === 0
+        ? 0
+        : allReviews.reduce((sum, r) => sum + toNumber(r.score), 0) /
+          allReviews.length;
+
+    await models.Sheets.update(
+      { rating: rating.toFixed(1), updated_at: new Date() },
+      { where: { id } },
+    );
+
+    return responseTemplates.setOKResponse({
+      id: reviewId,
+      status_flag,
+      visible_flag: status_flag === "ACTIVE",
+    });
   },
 };
