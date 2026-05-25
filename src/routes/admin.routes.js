@@ -28,3 +28,4 @@ router.get("/revenue", adminController.getRevenue);
 router.patch("/users/:id/username", adminController.updateUserUsername);
 router.patch("/users/:id/email", adminController.updateUserEmail);
 router.patch("/users/:id/password", adminController.updateUserPassword);
+router.patch("/plans/:id", adminController.updatePlan);

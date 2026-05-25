@@ -842,4 +842,38 @@ export const service = {
       visible_flag: status_flag === "ACTIVE",
     });
   },
+
+  async updatePlan(req) {
+    const { id } = req.params;
+    const { name, description, price, billing_interval_count, discount_percent } = req.body;
+
+    const plan = await models.Plans.findByPk(id);
+    if (!plan) {
+      return responseTemplates.setNotFoundResponse(
+        RESPONSE_MESSAGES.DATA_NOT_FOUND,
+      );
+    }
+
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+    if (description !== undefined) updateData.description = description;
+    if (price !== undefined) updateData.price = price;
+    if (billing_interval_count !== undefined) updateData.billing_interval_count = billing_interval_count;
+    if (discount_percent !== undefined) updateData.discount_percent = discount_percent;
+    updateData.updated_at = new Date();
+    updateData.updated_by = req.user.id;
+
+    await models.Plans.update(updateData, { where: { id } });
+
+    const updated = toPlain(await models.Plans.findByPk(id));
+
+    return responseTemplates.setOKResponse({
+      id: updated.id,
+      name: updated.name,
+      description: updated.description,
+      price: toNumber(updated.price),
+      billing_interval_count: updated.billing_interval_count,
+      discount_percent: updated.discount_percent != null ? toNumber(updated.discount_percent) : 0,
+    });
+  },
 };

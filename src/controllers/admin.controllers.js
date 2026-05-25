@@ -200,4 +200,14 @@ export const controller = {
       return res.status(500).json({ message: "Internal Server Error" });
     }
   },
+
+  async updatePlan(req, res) {
+    try {
+      const result = await adminService.updatePlan(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
 };
