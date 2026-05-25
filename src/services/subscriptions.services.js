@@ -25,6 +25,7 @@ const mapPlan = (row) => {
     billing_interval: plan.billing_interval,
     interval: plan.billing_interval,
     billing_interval_count: plan.billing_interval_count,
+    discount_percent: plan.discount_percent != null ? toNumber(plan.discount_percent) : 0,
     created_at: plan.created_at,
   };
 };

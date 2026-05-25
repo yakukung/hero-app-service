@@ -714,7 +714,6 @@ export const service = {
         );
     }
   },
-
   async updateUserPassword(req) {
     const { id } = req.params;
     let { new_password } = req.body;

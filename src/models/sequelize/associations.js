@@ -27,7 +27,6 @@ import { UsersFollows } from "./users_follows.model.js";
 import { ReportPosts } from "./report_posts.model.js";
 import { ReportSheets } from "./report_sheets.model.js";
 import { ReportUsers } from "./report_users.model.js";
-
 // Roles & permissions
 Roles.hasMany(Users, { foreignKey: "role_id", as: "users" });
 Users.belongsTo(Roles, { foreignKey: "role_id", as: "roles" });
