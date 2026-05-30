@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import fs from "fs";
 import { sequelize } from "../configs/sequelize.configs.js";
 import { HTTP_STATUS } from "../constants/http_status.constants.js";
 import { RESPONSE_MESSAGES } from "../constants/response.constant.js";
@@ -841,6 +842,86 @@ export const service = {
       status_flag,
       visible_flag: status_flag === "ACTIVE",
     });
+  },
+
+  async updateUserProfileImage(req) {
+    const transaction = await sequelize.transaction();
+    try {
+      const uid = req.params?.id;
+      if (!uid) {
+        await transaction.rollback();
+        return responseTemplates.setBadRequestResponse(
+          RESPONSE_MESSAGES.BAD_REQUEST,
+        );
+      }
+      if (!req.file) {
+        await transaction.rollback();
+        return responseTemplates.setBadRequestResponse(
+          RESPONSE_MESSAGES.BAD_REQUEST,
+        );
+      }
+
+      let oldProfileImagePath = null;
+      const profile_image = req.file.path;
+
+      const user = await usersRepository.findById(uid, transaction);
+      switch (user.code) {
+        case HTTP_STATUS.OK.code:
+          oldProfileImagePath = user.result?.profile_image;
+          break;
+        case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
+          return responseTemplates.setNotFoundResponse(
+            RESPONSE_MESSAGES.DATA_NOT_FOUND,
+          );
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
+      }
+
+      const updateResult = await usersRepository.updateProfileImage(
+        uid,
+        profile_image,
+        transaction,
+      );
+
+      switch (updateResult.code) {
+        case HTTP_STATUS.OK.code:
+          break;
+        case HTTP_STATUS.NOT_FOUND.code:
+          await transaction.rollback();
+          return responseTemplates.setNotFoundResponse(
+            RESPONSE_MESSAGES.DATA_NOT_FOUND,
+          );
+        default:
+          await transaction.rollback();
+          return responseTemplates.setInternalServerErrorResponse(
+            RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+          );
+      }
+
+      await transaction.commit();
+      if (
+        oldProfileImagePath &&
+        oldProfileImagePath !== profile_image &&
+        fs.existsSync(oldProfileImagePath)
+      ) {
+        try {
+          fs.unlinkSync(oldProfileImagePath);
+        } catch (fileError) {
+          console.error(fileError);
+        }
+      }
+      return responseTemplates.setNoContentResponse();
+    } catch (error) {
+      await transaction.rollback();
+      console.error(error);
+      return responseTemplates.setInternalServerErrorResponse(
+        RESPONSE_MESSAGES.INTERNAL_SERVER_ERROR,
+      );
+    }
   },
 
   async updatePlan(req) {

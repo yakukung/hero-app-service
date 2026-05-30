@@ -1,6 +1,7 @@
 import express from "express";
 import { authMiddleware } from "../middleware/auth.middleware.js";
 import { adminMiddleware } from "../middleware/admin.middleware.js";
+import { upload } from "../middleware/upload.middleware.js";
 import { controller as adminController } from "../controllers/admin.controllers.js";
 
 export const router = express.Router();
@@ -28,4 +29,9 @@ router.get("/revenue", adminController.getRevenue);
 router.patch("/users/:id/username", adminController.updateUserUsername);
 router.patch("/users/:id/email", adminController.updateUserEmail);
 router.patch("/users/:id/password", adminController.updateUserPassword);
+router.put(
+  "/users/:id/profile-image",
+  upload.single("profile_image"),
+  adminController.updateUserProfileImage,
+);
 router.patch("/plans/:id", adminController.updatePlan);

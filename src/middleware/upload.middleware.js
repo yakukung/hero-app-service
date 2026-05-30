@@ -10,7 +10,9 @@ if (!fs.existsSync(uploadDir)) {
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     let dest = "uploads/";
-    if (req.baseUrl.includes("/users")) {
+    if (req.baseUrl.includes("/admin") && req.params?.id) {
+      dest = path.join(uploadDir, "users", req.params.id, "profiles");
+    } else if (req.baseUrl.includes("/users")) {
       if (req.user && req.user.id) {
         dest = path.join(uploadDir, "users", req.user.id, "profiles");
       } else if (req.body && req.body.uid) {
