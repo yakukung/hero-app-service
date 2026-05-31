@@ -1,3 +1,6 @@
 node_modules/
 .DS_Store
 .env
+postman/
+fix_posts_table.js
+script-schema.sql
