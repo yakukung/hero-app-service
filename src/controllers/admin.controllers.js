@@ -211,6 +211,36 @@ export const controller = {
     }
   },
 
+  async getSubjects(req, res) {
+    try {
+      const result = await adminService.getSubjects(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
+
+  async createSubject(req, res) {
+    try {
+      const result = await adminService.createSubject(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
+
+  async deleteSubject(req, res) {
+    try {
+      const result = await adminService.deleteSubject(req, res);
+      res.status(parseInt(result.code)).json(result);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
+
   async updatePlan(req, res) {
     try {
       const result = await adminService.updatePlan(req, res);

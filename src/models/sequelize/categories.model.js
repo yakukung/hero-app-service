@@ -3,7 +3,6 @@ import { v7 as uuidv7 } from "uuid";
 import { sequelize } from "../../configs/sequelize.configs.js";
 import {
   ACTIVE_INACTIVE_STATUS,
-  CATEGORY_ENUM_VALUES,
 } from "../../constants/db_schema.constants.js";
 
 export const Categories = sequelize.define(
@@ -17,15 +16,20 @@ export const Categories = sequelize.define(
     },
     sheet_id: {
       type: DataTypes.UUID,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: "sheets",
         key: "id",
       },
     },
     name: {
-      type: DataTypes.ENUM(...CATEGORY_ENUM_VALUES),
+      type: DataTypes.STRING(255),
       allowNull: false,
+    },
+    is_master: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
     },
     visible_flag: {
       type: DataTypes.BOOLEAN,

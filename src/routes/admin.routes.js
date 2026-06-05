@@ -34,4 +34,7 @@ router.put(
   upload.single("profile_image"),
   adminController.updateUserProfileImage,
 );
+router.get("/subjects", adminController.getSubjects);
+router.post("/subjects", adminController.createSubject);
+router.delete("/subjects/:id", adminController.deleteSubject);
 router.patch("/plans/:id", adminController.updatePlan);

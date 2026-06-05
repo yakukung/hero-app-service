@@ -18,9 +18,20 @@ import {
   moveFile,
   resizeImage,
 } from "../utils/file.utils.js";
-import { models } from "../models/sequelize/associations.js";
 import { isAdminRole } from "../utils/authz.utils.js";
 import { message, toNumber, toPlain } from "../utils/backend.utils.js";
+import { models } from "../models/sequelize/associations.js";
+
+const validateMasterCategory = async (name) => {
+  try {
+    const count = await models.Categories.count({
+      where: { name, is_master: true },
+    });
+    return count > 0;
+  } catch {
+    return false;
+  }
+};
 
 const mapPurchasedSheet = (sheet) => ({
   id: sheet.id,
@@ -498,7 +509,10 @@ export const service = {
         req.body;
       const normalizedCategory =
         typeof category === "string" ? category.trim() : "";
-      if (!CATEGORY_ENUM_VALUES.includes(normalizedCategory)) {
+      const isValidCategory =
+        CATEGORY_ENUM_VALUES.includes(normalizedCategory) ||
+        await validateMasterCategory(normalizedCategory);
+      if (!isValidCategory) {
         await transaction.rollback();
         await deleteUploadedFiles(allFiles);
         return responseTemplates.setBadRequestResponse(
