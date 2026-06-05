@@ -6,7 +6,7 @@ export const repository = {
   async create(sheet_id, name, transaction) {
     try {
       const result = await sequelize.Categories.create(
-        { sheet_id, name },
+        { sheet_id, category_name: name },
         { transaction },
       );
 

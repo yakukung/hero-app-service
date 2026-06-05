@@ -22,15 +22,8 @@ import { isAdminRole } from "../utils/authz.utils.js";
 import { message, toNumber, toPlain } from "../utils/backend.utils.js";
 import { models } from "../models/sequelize/associations.js";
 
-const validateMasterCategory = async (name) => {
-  try {
-    const count = await models.Categories.count({
-      where: { name },
-    });
-    return count > 0;
-  } catch {
-    return false;
-  }
+const validateMasterCategory = (name) => {
+  return CATEGORY_ENUM_VALUES.includes(name);
 };
 
 const mapPurchasedSheet = (sheet) => ({
