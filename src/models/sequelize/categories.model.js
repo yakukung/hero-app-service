@@ -26,11 +26,6 @@ export const Categories = sequelize.define(
       type: DataTypes.STRING(255),
       allowNull: false,
     },
-    is_master: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false,
-    },
     visible_flag: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
