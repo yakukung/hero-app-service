@@ -7,7 +7,6 @@ export const service = {
   async getAll(_req, _res) {
     try {
       const masterSubjects = await models.Categories.findAll({
-        where: { is_master: true },
         attributes: ["id", "name"],
         order: [["name", "ASC"]],
       });

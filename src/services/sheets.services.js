@@ -25,7 +25,7 @@ import { models } from "../models/sequelize/associations.js";
 const validateMasterCategory = async (name) => {
   try {
     const count = await models.Categories.count({
-      where: { name, is_master: true },
+      where: { name },
     });
     return count > 0;
   } catch {
