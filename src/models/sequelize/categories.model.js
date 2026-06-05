@@ -22,7 +22,7 @@ export const Categories = sequelize.define(
         key: "id",
       },
     },
-    category_name: {
+    name: {
       type: DataTypes.STRING(255),
       allowNull: false,
     },
