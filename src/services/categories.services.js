@@ -7,7 +7,8 @@ export const service = {
   async getAll(_req, _res) {
     try {
       const masterSubjects = await models.Categories.findAll({
-        attributes: ["id", "name"],
+        attributes: ["name"],
+        group: ["name"],
         order: [["name", "ASC"]],
       });
 
@@ -15,7 +16,6 @@ export const service = {
         return responseTemplates.setOKResponse({
           total_items: masterSubjects.length,
           categories: masterSubjects.map((s) => ({
-            id: s.id,
             name: s.name,
           })),
         });
