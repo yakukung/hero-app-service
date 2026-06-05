@@ -293,7 +293,7 @@ export const service = {
       );
       if (!comparePassword) {
         await transaction.rollback();
-        return responseTemplates.setUnauthorizedResponse(
+        return responseTemplates.setBadRequestResponse(
           RESPONSE_MESSAGES.INVALID_OLD_PASSWORD,
         );
       }
