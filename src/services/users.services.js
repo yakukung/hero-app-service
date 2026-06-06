@@ -434,7 +434,7 @@ export const service = {
 
       if (!isPasswordValid) {
         await transaction.rollback();
-        return responseTemplates.setUnauthorizedResponse(
+        return responseTemplates.setBadRequestResponse(
           RESPONSE_MESSAGES.INVALID_PASSWORD,
         );
       }
